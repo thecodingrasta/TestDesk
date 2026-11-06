@@ -1,0 +1,20 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+language: en-GB
+tone_instructions: Use concise English. Report concrete correctness, security and portability issues with evidence. Avoid filler and speculative rewrites.
+early_access: false
+reviews:
+  profile: chill
+  poem: false
+  in_progress_fortune: false
+  request_changes_workflow: false
+  auto_review:
+    enabled: true
+    drafts: false
+  path_filters:
+    - '!third_party/licenses/**'
+    - '!internal/desktop/assets/wailsjs/**'
+  path_instructions:
+    - path: internal/**
+      instructions: Check project/session isolation, test selection identity, incomplete report handling, process cancellation and Windows/Linux/macOS behavior. Do not infer test success from exit status alone when structured results are configured.
+    - path: .github/workflows/**
+      instructions: Check least-privilege tokens, pinned actions, fork safety, native macOS Intel/ARM64 validation and release tag/commit identity. Releases must remain drafts.

@@ -1,0 +1,187 @@
+{
+  "version": 1,
+  "name": "sample-project",
+  "workspace": ".testdesk",
+  "ui": {
+    "theme": "obsidian",
+    "widgetMode": "always",
+    "alwaysOnTop": true,
+    "topmostMode": "always",
+    "startMinimized": false,
+    "compactWidth": 700,
+    "compactHeight": 190,
+    "compactExpandedHeight": 290,
+    "compactX": 104,
+    "compactY": 786,
+    "compactPositionSet": true,
+    "managerWidth": 1250,
+    "managerHeight": 825
+  },
+  "providers": [
+    {
+      "id": "backend-xunit",
+      "name": "Backend xUnit",
+      "kind": "dotnet",
+      "layer": "backend",
+      "root": ".",
+      "enabled": true,
+      "tags": [
+        "backend",
+        "unit",
+        "orders"
+      ],
+      "discover": {
+        "command": {
+          "exe": "go",
+          "args": [
+            "run",
+            "./scripts/fake_provider.go",
+            "discover",
+            "backend-xunit"
+          ],
+          "timeoutSeconds": 30
+        },
+        "parser": "lines"
+      },
+      "run": {
+        "all": {
+          "exe": "go",
+          "args": [
+            "run",
+            "./scripts/fake_provider.go",
+            "run",
+            "backend-xunit",
+            "{{artifact.path}}"
+          ],
+          "timeoutSeconds": 30
+        },
+        "test": {
+          "exe": "go",
+          "args": [
+            "run",
+            "./scripts/fake_provider.go",
+            "run",
+            "backend-xunit",
+            "{{artifact.path}}",
+            "{{test.selector}}"
+          ],
+          "timeoutSeconds": 30
+        }
+      },
+      "results": {
+        "format": "junit",
+        "path": "{{artifact.path}}"
+      }
+    },
+    {
+      "id": "frontend-vitest",
+      "name": "Frontend Vitest",
+      "kind": "vitest",
+      "layer": "frontend",
+      "root": ".",
+      "enabled": true,
+      "tags": [
+        "frontend",
+        "unit",
+        "checkout"
+      ],
+      "discover": {
+        "command": {
+          "exe": "go",
+          "args": [
+            "run",
+            "./scripts/fake_provider.go",
+            "discover",
+            "frontend-vitest"
+          ],
+          "timeoutSeconds": 30
+        },
+        "parser": "lines"
+      },
+      "run": {
+        "all": {
+          "exe": "go",
+          "args": [
+            "run",
+            "./scripts/fake_provider.go",
+            "run",
+            "frontend-vitest",
+            "{{artifact.path}}"
+          ],
+          "timeoutSeconds": 30
+        },
+        "test": {
+          "exe": "go",
+          "args": [
+            "run",
+            "./scripts/fake_provider.go",
+            "run",
+            "frontend-vitest",
+            "{{artifact.path}}",
+            "{{test.selector}}"
+          ],
+          "timeoutSeconds": 30
+        }
+      },
+      "results": {
+        "format": "junit",
+        "path": "{{artifact.path}}"
+      }
+    },
+    {
+      "id": "browser-playwright",
+      "name": "Browser Playwright",
+      "kind": "playwright",
+      "layer": "frontend",
+      "root": ".",
+      "enabled": true,
+      "tags": [
+        "frontend",
+        "e2e",
+        "login"
+      ],
+      "discover": {
+        "command": {
+          "exe": "go",
+          "args": [
+            "run",
+            "./scripts/fake_provider.go",
+            "discover",
+            "browser-playwright"
+          ],
+          "timeoutSeconds": 30
+        },
+        "parser": "lines"
+      },
+      "run": {
+        "all": {
+          "exe": "go",
+          "args": [
+            "run",
+            "./scripts/fake_provider.go",
+            "run",
+            "browser-playwright",
+            "{{artifact.path}}"
+          ],
+          "timeoutSeconds": 30
+        },
+        "test": {
+          "exe": "go",
+          "args": [
+            "run",
+            "./scripts/fake_provider.go",
+            "run",
+            "browser-playwright",
+            "{{artifact.path}}",
+            "{{test.selector}}"
+          ],
+          "timeoutSeconds": 30
+        }
+      },
+      "results": {
+        "format": "junit",
+        "path": "{{artifact.path}}"
+      }
+    }
+  ]
+}

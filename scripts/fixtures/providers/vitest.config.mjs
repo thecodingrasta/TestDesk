@@ -1,0 +1,9 @@
+import { defineConfig } from 'vitest/config';
+
+export default defineConfig({
+  test: {
+    projects: ['alpha', 'beta'].map(name => ({
+      test: { name, include: ['case.test.js'] },
+    })),
+  },
+});

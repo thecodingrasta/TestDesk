@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#07111f" />
+  <title>TestDesk</title>
+  <link rel="icon" type="image/png" href="./testdesk-brand-icon.png" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <main id="app" class="loading" aria-busy="true">
+    <section id="splash" class="splash" role="status" aria-live="polite" aria-atomic="true">
+      <div class="splash-card panel">
+        <img class="splash-wordmark" src="./testdesk-brand-horizontal.png" alt="TestDesk — Every project, every test" />
+        <div class="splash-copy">
+          <div class="splash-header-row">
+            <div id="splashOperation" class="eyebrow">Starting TestDesk</div>
+            <div id="splashLiveBadge" class="splash-live-badge hidden">
+              <span class="pulse-dot"></span>
+              <strong id="splashLiveCount">0</strong>
+              <span id="splashLiveUnit">tests identified</span>
+            </div>
+          </div>
+          <strong id="splashTitle">Opening TestDesk</strong>
+          <span id="splashDetail">Preparing your test workspace…</span>
+          <div class="loading-track" aria-hidden="true"><div id="splashProgress"></div></div>
+          <small id="splashSubtitle">Loading project state, providers and recent test history.</small>
+        </div>
+      </div>
+    </section>
+
+    <section id="player" class="player panel hidden" aria-label="Compact TestDesk controller">
+      <div class="widget-drag-surface" aria-label="Drag compact controller">
+        <img class="widget-brand" src="./testdesk-brand-icon.png" alt="" />
+        <div class="now">
+          <div class="widget-heading">
+            <span id="providerLabel" class="eyebrow">TestDesk</span>
+            <select id="compactProjectSelect" class="compact-project-select hidden" aria-label="Active project"></select>
+            <span class="widget-state-group">
+              <span id="widgetProjectsStatus" class="widget-project-warning hidden" role="status" title="Project activity list unavailable">Projects?</span>
+              <span id="widgetState" class="widget-state state-ready"><span class="status-dot" aria-hidden="true"></span><span id="widgetStateLabel">Idle</span></span>
+              <span id="runClock" class="run-clock hidden">0:00</span>
+            </span>
+          </div>
+          <button id="testTitle" class="title title-button">No active tests</button>
+          <div id="compactDetails" class="compact-details hidden"></div>
+          <div id="widgetProgress" class="progress-shell" role="progressbar" aria-label="Work items finished" aria-valuemin="0" aria-valuetext="Work item progress unavailable"><div id="progressBar" class="progress"></div></div>
+          <div class="compact-stats" aria-live="polite"><span class="pass-stat"><strong id="widgetPassed">0</strong> passed</span><span class="fail-stat"><strong id="widgetFailed">0</strong> failed</span><span id="widgetProgressText"></span></div>
+        </div>
+      </div>
+      <button class="icon widget-close" id="closeWidgetBtn" data-tooltip="Hide Widget" aria-label="Hide Widget"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 7l10 10M17 7L7 17"/></svg></button>
+      <div class="controls">
+        <button class="icon primary" id="widgetActionBtn" data-tooltip="Run All Tests" aria-label="Run All Tests">
+          <svg class="play-glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path class="fill-icon" d="M7.25 4.8a1.4 1.4 0 0 1 2.1-1.2l9.2 7a1.75 1.75 0 0 1 0 2.8l-9.2 7a1.4 1.4 0 0 1-2.1-1.2z"/></svg>
+          <svg class="pause-glyph hidden" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="6" y="4.5" width="4.2" height="15" rx="1.5"/><rect x="13.8" y="4.5" width="4.2" height="15" rx="1.5"/></svg>
+          <svg class="resume-glyph hidden" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path class="fill-icon" d="M7.25 4.8a1.4 1.4 0 0 1 2.1-1.2l9.2 7a1.75 1.75 0 0 1 0 2.8l-9.2 7a1.4 1.4 0 0 1-2.1-1.2z"/></svg>
+        </button>
+        <button class="icon" id="skipBtn" data-tooltip="Skip Current Test" aria-label="Skip Current Test"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path class="fill-icon" d="M5.5 5.1a1.25 1.25 0 0 1 1.9-1.05l8.15 6.05a1.35 1.35 0 0 1 0 2.15L7.4 18.3a1.25 1.25 0 0 1-1.9-1.05z"/><rect x="17.2" y="4.5" width="2.6" height="15" rx="1.2"/></svg></button>
+        <button class="icon danger" id="stopBtn" data-tooltip="Stop Active Run" aria-label="Stop Active Run"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5" y="5" width="14" height="14" rx="2.4"/></svg></button>
+        <button class="icon" id="openBtn" data-tooltip="Open Manager" aria-label="Open Manager"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 17L17.5 6.5M9 6.5h8.5V15"/></svg></button>
+      </div>
+    </section>
+
+    <section id="setup" class="workspace page-workspace hidden">
+      <header class="app-header">
+        <div class="brand-lockup"><img src="./testdesk-brand-icon.png" alt="" /><div><strong>TestDesk <em>v1</em></strong><span>Projects</span></div></div>
+        <div class="top-actions">
+          <button id="openAddProjectBtn" class="button primary">Add Project</button>
+          <button id="setupBackBtn" class="button ghost">Back to Manager</button>
+        </div>
+      </header>
+      <div class="page-scroll">
+        <div class="page-heading"><div><div class="eyebrow">Connected workspaces</div><h1>Projects</h1><p>Activate an existing repository or add a new test workspace. Forgetting a project only removes TestDesk’s local record.</p></div></div>
+        <section class="panel setup-card projects-card">
+          <div class="section-head"><div><h2>Known projects</h2><span class="subtle">Your detected test workspaces</span></div><button id="refreshProjectsBtn" class="button ghost">Refresh List</button></div>
+          <div id="projectList" class="project-list"></div>
+        </section>
+        <footer>Made with ♥ by <a href="https://utilovate.com" target="_blank" rel="noopener noreferrer">Utilovate</a></footer>
+      </div>
+      <div id="addProjectBackdrop" class="sheet-backdrop hidden"></div>
+      <section id="addProjectSheet" class="add-project-sheet panel hidden" role="dialog" aria-modal="true" aria-labelledby="addProjectTitle">
+        <div class="sheet-handle" aria-hidden="true"></div>
+        <div class="section-head">
+          <div><div class="eyebrow">New workspace</div><h2 id="addProjectTitle">Add project</h2><span class="subtle">Choose a repository root and confirm detected providers.</span></div>
+          <button id="closeAddProjectBtn" class="button ghost icon-only" aria-label="Close Add Project">×</button>
+        </div>
+        <label for="projectPathInput">Project folder</label>
+        <div class="path-row"><input id="projectPathInput" placeholder="C:\path\to\project" /><button id="chooseProjectBtn" class="button">Choose…</button></div>
+        <div id="setupHint" class="hint" role="status">No project selected yet.</div>
+        <div class="divider"></div>
+        <label>Detected providers</label>
+        <div id="detectedProviders" class="provider-chips"></div>
+        <label class="checkbox-line"><input id="setupAutoDiscover" type="checkbox" checked /> Discover tests immediately</label>
+        <div class="setup-actions"><button id="previewProjectBtn" class="button ghost">Preview Detection</button><button id="setupProjectBtn" class="button primary">Add Project</button></div>
+      </section>
+    </section>
+
+    <section id="manager" class="workspace hidden">
+      <header class="app-header">
+        <div class="brand-lockup"><img src="./testdesk-brand-icon.png" alt="" /><div><strong id="managerTitle">TestDesk <em>v1</em></strong><span id="managerSubtitle">Native test lifecycle manager</span></div></div>
+        <div class="top-actions"><label class="sr-only" for="projectSelect">Active project</label><select id="projectSelect"></select><button id="projectsBtn" class="button ghost">Projects</button><button id="settingsBtn" class="button ghost">Settings</button><button id="discoverBtn" class="button">Refresh Discovery</button><button id="collapseBtn" class="button icon-only" aria-label="Open Compact Widget" title="Open Compact Widget">↙</button></div>
+      </header>
+      <div id="managerStatusUnavailable" class="hint hidden" role="status">Status unavailable. Displayed project and test information may be out of date.</div>
+      <section class="summary-grid" aria-label="Test summary"><div class="metric"><span>Providers</span><strong id="providerCount">0</strong></div><div class="metric"><span>Discovered Tests</span><strong id="testCount">0</strong></div><div class="metric"><span>Queued</span><strong id="queueCount">0</strong></div><div class="metric"><span>Last Result</span><strong id="lastResult">—</strong></div></section>
+      <section class="filters" aria-label="Filter tests"><input id="queryInput" placeholder="Search tests, modules, tags…" /><select id="providerFilter"><option value="">All Providers</option></select><select id="layerFilter"><option value="">All Layers</option><option value="frontend">Frontend</option><option value="backend">Backend</option><option value="e2e">E2E</option><option value="integration">Integration</option><option value="unit">Unit</option><option value="component">Component</option></select><select id="moduleFilter"><option value="">All Modules</option></select><select id="statusFilter"><option value="">Any Status</option><option value="unknown">Unknown</option><option value="passed">Passed</option><option value="failed">Failed</option><option value="skipped">Skipped</option><option value="cancelled">Stopped</option><option value="timed_out">Timed Out</option></select><input id="tagInput" placeholder="Tags, comma separated" /></section>
+      <section class="bulk-actions"><div><strong id="filteredCount">0</strong> filtered <span aria-hidden="true">·</span> <span id="selectedCount">0 selected</span></div><div><button id="selectFilteredBtn" class="button ghost">Select All Filtered</button><button id="clearSelectionBtn" class="button ghost">Clear</button><button id="runSelectedBtn" class="button primary">Run Selected</button><button id="runFilteredBtn" class="button">Run All Filtered</button><button id="copyDiagBtn" class="button ghost">Copy Diagnostics</button></div></section>
+      <section class="content">
+        <aside class="runs panel">
+          <div class="pane-tabs" role="tablist" aria-label="Run information">
+            <button id="activeRunTabBtn" class="pane-tab active" role="tab" aria-selected="true" aria-controls="activeRunPane">Active Run</button>
+            <button id="recentRunsTabBtn" class="pane-tab" role="tab" aria-selected="false" aria-controls="recentRunsPane">Recent Runs</button>
+          </div>
+          <div id="activeRunPane" class="run-tab-pane active" role="tabpanel" aria-labelledby="activeRunTabBtn">
+            <div class="section-head"><h2>Active run</h2><button id="copyOutputBtn" class="button ghost">Copy Output</button></div>
+            <div id="runPanel" class="run-panel empty">No active run.</div>
+            <div class="section-head"><h2>Live output</h2></div>
+            <pre id="logOutput" class="log-output">No output yet.</pre>
+          </div>
+          <div id="recentRunsPane" class="run-tab-pane hidden" role="tabpanel" aria-labelledby="recentRunsTabBtn">
+            <div class="section-head"><div><h2>Recent runs</h2><span class="subtle">Select a run to load its captured output.</span></div></div>
+            <div id="recentRuns" class="recent"></div>
+          </div>
+        </aside>
+        <div id="inspectorResizer" class="resizer-horizontal" role="separator" aria-orientation="vertical" aria-label="Resize inspector panel"></div>
+        <section class="tests panel">
+          <div class="tests-head"><div><h2>Tests by provider</h2><span id="listHint" class="subtle">Select a test or expand details</span></div><div><button id="toggleAllProvidersBtn" class="button ghost">Collapse All</button></div></div>
+          <div id="catalogLoader" class="catalog-loader hidden" role="status" aria-live="polite"><span class="spinner" aria-hidden="true"></span><strong id="catalogLoaderLabel">Loading tests…</strong></div>
+          <div id="testGroups" class="test-groups"></div>
+        </section>
+      </section>
+      <footer>Made with ♥ by <a href="https://utilovate.com" target="_blank" rel="noopener noreferrer">Utilovate</a></footer>
+    </section>
+
+    <section id="settings" class="workspace page-workspace hidden">
+      <header class="app-header"><div class="brand-lockup"><img src="./testdesk-brand-icon.png" alt="" /><div><strong>TestDesk <em>v1</em></strong><span>Settings</span></div></div><button id="settingsBackBtn" class="button ghost">Back to Manager</button></header>
+      <div class="settings-content">
+        <div class="page-heading"><div><div class="eyebrow">Application preferences</div><h1>Settings</h1><p>Configure TestDesk’s window, compact controller, current workspace and agent integrations.</p></div></div>
+        <div class="settings-tabs" role="tablist" aria-label="Settings sections">
+          <button id="generalSettingsTabBtn" class="pane-tab active" type="button" role="tab" aria-selected="true" aria-controls="generalSettingsPane">General</button>
+          <button id="agentSettingsTabBtn" class="pane-tab" type="button" role="tab" aria-selected="false" aria-controls="agentSettingsPane">Agent Integrations</button>
+        </div>
+        <section id="generalSettingsPane" class="settings-section settings-pane active" role="tabpanel" aria-labelledby="generalSettingsTabBtn">
+          <div class="settings-section-head"><div><div class="eyebrow">General</div><h2 id="generalSettingsTitle">Application and widget</h2></div></div>
+          <div class="settings-grid general-settings-grid">
+            <div class="panel settings-card">
+              <div class="section-head"><div><h3>Compact controller</h3><span class="subtle">Choose size, when it appears and how it stacks.</span></div></div>
+              <div class="preference-grid">
+                <label>Widget size<select id="widgetSizeSelect"><option value="small">Small (320px HUD)</option><option value="medium">Medium (400px balanced)</option><option value="large">Large (480px spacious)</option></select></label>
+                <label>Compact mode<select id="widgetModeSelect"><option value="when_active">Auto (show on run / minimise)</option><option value="always">Always visible</option><option value="off">Off / manual only (tray only)</option></select></label>
+                <label>Pin to top<select id="topmostModeSelect"><option value="always">Always on top</option><option value="when_active">While running tests only</option><option value="off">Off (normal window)</option></select></label>
+                <label>Log & output retention<select id="logRetentionSelect"><option value="1">1 day</option><option value="3">3 days</option><option value="7">7 days (default)</option><option value="14">14 days</option><option value="30">30 days</option><option value="0">Keep indefinitely</option></select></label>
+              </div>
+              <div class="detail-actions"><button id="resetWidgetBtn" class="button ghost">Reset to Bottom Left</button></div>
+              <div id="widgetSettingsStatus" class="hint" role="status"></div>
+            </div>
+            <div class="panel settings-card">
+              <div class="section-head"><div><h3>Current workspace</h3><span class="subtle">Project-scoped settings and local data.</span></div></div>
+              <dl class="settings-facts"><div><dt>Project</dt><dd id="settingsProjectName">—</dd></div><div><dt>Root</dt><dd><code id="settingsProjectPath">—</code></dd></div><div><dt>Configuration</dt><dd><code id="settingsConfigPath">—</code></dd></div></dl>
+              <div class="detail-actions"><button id="openProjectsFromSettingsBtn" class="button">Manage Projects</button></div>
+            </div>
+          </div>
+        </section>
+        <section id="agentSettingsPane" class="settings-section settings-pane" role="tabpanel" aria-labelledby="agentSettingsTabBtn">
+          <div class="agent-settings-grid">
+            <div class="agent-left-col">
+              <div class="settings-section-head"><div><div class="eyebrow">MCP / agentic AI</div><h2 id="agentSettingsTitle">Agent integrations</h2><div id="mcpSummary" class="mcp-summary-wrap"><p id="mcpCounts" class="mcp-counts">Detecting installed and available CLI workspaces…</p><p id="mcpActiveProject" class="mcp-active-project subtle"></p></div></div></div>
+              <div class="panel settings-card skills-card"><div class="section-head"><div><h3>Agent Skills & Prompt Rules</h3><span class="subtle">Install lean TestDesk skills & instructions for Claude, Antigravity, Cursor and custom agents.</span></div><button id="installSkillsBtn" class="button primary">Install Agent Skills</button></div><div id="skillsInstallStatus" class="hint" role="status">Provisions AGENTS.md, CLAUDE.md, .claude/skills, .cursor/rules and .gemini/skills for the active repository.</div></div>
+              <div class="panel settings-card integrations-card"><div class="section-head"><div><h3>Detected workspaces</h3><span id="mcpInstallStatus" class="hint" role="status"></span></div><button id="mcpRefreshBtn" class="button ghost">Refresh</button></div><div id="mcpTargets" class="mcp-targets"></div></div>
+            </div>
+            <div class="panel settings-card manual-card"><h3>Manual MCP setup</h3><p class="hint">Choose a target to copy the exact local configuration. Restart the agent after installing.</p><label for="manualTargetSelect">Target</label><select id="manualTargetSelect"></select><pre id="mcpManualConfig" class="manual-config">No MCP target selected.</pre><div class="detail-actions"><button id="copyMcpManualBtn" class="button primary">Copy Configuration</button><button id="copyMcpCommandBtn" class="button">Copy Server Command</button></div></div>
+          </div>
+        </section>
+        <footer>Made with ♥ by <a href="https://utilovate.com" target="_blank" rel="noopener noreferrer">Utilovate</a></footer>
+      </div>
+    </section>
+  </main>
+  <div id="toast" class="toast hidden" role="status" aria-live="polite"></div>
+  <dialog id="confirmDialog" class="confirm-dialog" aria-labelledby="confirmTitle"><form method="dialog"><h2 id="confirmTitle">Confirm action</h2><p id="confirmMessage"></p><div class="dialog-actions"><button id="confirmCancelBtn" value="cancel" class="button ghost">Cancel</button><button id="confirmAcceptBtn" value="accept" class="button danger">Continue</button></div></form></dialog>
+  <dialog id="renameDialog" class="confirm-dialog" aria-labelledby="renameTitle"><form method="dialog" class="dialog-form"><h2 id="renameTitle">Rename Project Name</h2><div class="dialog-field"><label for="renameProjectInput">Project display name</label><input id="renameProjectInput" class="dialog-input" maxlength="120" required /></div><div class="dialog-actions"><button value="cancel" formnovalidate class="button ghost">Cancel</button><button value="accept" class="button primary">Save Name</button></div></form></dialog>
+  <script src="./app.js"></script>
+</body>
+</html>

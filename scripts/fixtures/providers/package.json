@@ -1,0 +1,16 @@
+{
+  "name": "testdesk-provider-fixtures",
+  "private": true,
+  "packageManager": "npm@11.6.2",
+  "type": "module",
+  "devDependencies": {
+    "jest": "30.5.2",
+    "jest-junit": "17.0.0",
+    "vitest": "4.1.12"
+  },
+  "overrides": {
+    "glob": "14.0.2",
+    "minimatch": "11.0.1",
+    "test-exclude": "8.0.0"
+  }
+}

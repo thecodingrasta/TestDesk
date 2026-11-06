@@ -1,0 +1,65 @@
+name: Framework & Provider Compatibility Report
+description: Share test results and verification feedback for a test runner, framework, or operating system.
+title: "[Compatibility]: "
+labels: ["compatibility", "provider"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for testing. Working and broken both help. Mac reports are especially useful.
+  - type: input
+    id: version
+    attributes:
+      label: TestDesk version
+      description: From the release you downloaded (for example 1.0.0), or the commit if you built it.
+    validations:
+      required: true
+  - type: input
+    id: framework
+    attributes:
+      label: Test Framework & Version
+      description: e.g. xUnit 2.8, NUnit 4.1, MSTest 3.4, Vitest 2.0, Jest 29, pytest 8.2, Cargo 1.78
+      placeholder: e.g. xUnit 2.8.1 (.NET 8.0)
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      description: Add your OS version in the notes below. On a Mac, Apple menu then About This Mac shows the macOS version and chip.
+      options:
+        - Windows 11 / 10 (x64)
+        - Windows 11 (ARM64)
+        - macOS (Apple Silicon)
+        - macOS (Intel)
+        - Linux (Ubuntu / Debian)
+        - Linux (Fedora / Arch)
+        - Other
+    validations:
+      required: true
+  - type: dropdown
+    id: status
+    attributes:
+      label: Verification Status
+      options:
+        - Fully Working (Auto-Discovery + Run All + Targeted Test + Diagnostics)
+        - Partial (Auto-Discovery works, targeted run needs custom config)
+        - Issues Found (Discovery or Run fails)
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Testing Details & Configuration
+      description: Share your `testdesk.json` provider config or relevant discovery/execution output.
+      placeholder: |
+        - Number of tests discovered: ...
+        - Command used: ...
+        - Results: ...
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Additional Notes or Suggestions
+      description: Any specific adjustments needed for this toolchain.

@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: TestDesk Documentation
+    url: https://github.com/thecodingrasta/testdesk/tree/main/docs
+    about: Read the official guides for installation, provider setup, MCP agents and multi-project configuration.

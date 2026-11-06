@@ -1,0 +1,15 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "TestDesk",
+  "outputfilename": "testdesk",
+  "frontend:dir": "internal/desktop/assets",
+  "frontend:install": "",
+  "frontend:build": "",
+  "frontend:dev:watcher": "",
+  "frontend:dev:serverUrl": "auto",
+  "build:tags": "",
+  "author": {
+    "name": "TestDesk contributors",
+    "email": ""
+  }
+}

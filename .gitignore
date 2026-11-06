@@ -1,0 +1,45 @@
+# Code Indexing
+.gitnexus/
+.claude/skills/gitnexus/
+
+# Caches, test output and local runtime state
+.cache/
+.testdesk-cache/
+.testdesk-validation/
+**/.testdesk/
+node_modules/
+test-results/
+coverage/
+*.log
+*.tmp
+*.test
+*.out
+*.testdesk-backup-*
+__pycache__/
+*.pyc
+
+# Generated packages; the Wails icons below are source assets
+dist/
+build/*
+!build/appicon.png
+!build/windows/
+build/windows/*
+!build/windows/icon.ico
+*.exe
+*.dll
+*.dylib
+*.so
+
+# IDE and operating system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Credentials and local overrides
+.env
+.env.*
+!.env.example
+*.local
+*.pem
+*.key

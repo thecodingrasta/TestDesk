@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "name": "TestDesk",
+  "workspace": ".testdesk",
+  "ui": {
+    "theme": "obsidian",
+    "widgetMode": "always",
+    "widgetSize": "medium",
+    "alwaysOnTop": false,
+    "topmostMode": "when_active",
+    "startMinimized": false,
+    "compactWidth": 480,
+    "compactHeight": 106,
+    "compactExpandedHeight": 200,
+    "managerWidth": 1250,
+    "managerHeight": 825,
+    "logRetentionDays": 3
+  },
+  "providers": [
+    {
+      "id": "go-test",
+      "name": "Go test",
+      "kind": "go-test",
+      "layer": "backend",
+      "root": ".",
+      "enabled": true,
+      "tags": [
+        "backend",
+        "unit"
+      ],
+      "discover": {
+        "command": {
+          "exe": "go",
+          "args": [
+            "test",
+            "./...",
+            "-list",
+            "."
+          ],
+          "timeoutSeconds": 120
+        },
+        "parser": "go-list"
+      },
+      "run": {
+        "all": {
+          "exe": "go",
+          "args": [
+            "test",
+            "./...",
+            "-json"
+          ],
+          "timeoutSeconds": 1800
+        },
+        "test": {
+          "exe": "go",
+          "args": [
+            "test",
+            "./...",
+            "-run",
+            "^{{test.selector}}$",
+            "-json"
+          ],
+          "timeoutSeconds": 900
+        }
+      },
+      "results": {
+        "format": "go-json",
+        "path": ""
+      }
+    }
+  ]
+}

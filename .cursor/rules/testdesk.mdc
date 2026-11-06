@@ -1,0 +1,13 @@
+---
+description: TestDesk test runner and orchestration guidelines
+globs: *
+alwaysApply: true
+---
+
+# TestDesk Test Orchestrator Rules
+
+When running, planning, or debugging tests in this workspace:
+- Use TestDesk MCP tools (`testdesk_snapshot`, `testdesk_tests`, `testdesk_run`, `testdesk_rerun_failed`, `testdesk_diagnostics`).
+- Use `testdesk_plan` before broad test executions.
+- Use `testdesk_rerun_failed` after fixing broken tests.
+- Bound diagnostics requests (`maxBytes: 4096`) rather than reading full log streams.

@@ -1,0 +1,184 @@
+name: Native validation
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  pull_request:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            target: windows-amd64
+          - os: ubuntu-24.04
+            target: linux-amd64
+          - os: macos-15-intel
+            target: macos-amd64
+          - os: macos-latest
+            target: macos-arm64
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - name: Isolate application state
+        shell: bash
+        run: echo "TESTDESK_CONFIG_HOME=$RUNNER_TEMP/testdesk-ci-config" >> "$GITHUB_ENV"
+      - name: Install Linux desktop dependencies
+        if: runner.os == 'Linux'
+        run: bash scripts/install_linux_deps.sh
+      - name: Select Linux WebKit ABI
+        if: runner.os == 'Linux'
+        run: echo 'GOFLAGS=-tags=webkit2_41' >> "$GITHUB_ENV"
+      - name: Validate source, documentation and agent assets
+        shell: bash
+        run: bash scripts/validate.sh
+      - name: Race detector (macOS)
+        if: runner.os == 'macOS'
+        env:
+          CGO_ENABLED: '1'
+          TESTDESK_CONFIG_HOME: ${{ runner.temp }}/testdesk-race-config
+        run: go test -race ./... -count=1 -timeout=10m
+      - name: Build the native desktop package
+        run: python scripts/package.py
+      - name: Ensure Windows WebView2 runtime
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./scripts/windows/Ensure-WebView2.ps1
+      - name: Exercise the extracted desktop package
+        if: runner.os != 'Linux'
+        run: python scripts/check_package.py --desktop-smoke
+      - name: Verify the extracted Linux package
+        if: runner.os == 'Linux'
+        run: python scripts/check_package.py
+      - name: Upload temporary candidate download
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: testdesk-candidate-${{ matrix.target }}-${{ github.run_id }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 14
+
+  providers:
+    name: Real providers (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-24.04, macos-15-intel, macos-latest]
+    env:
+      TESTDESK_REAL_CARGO_TESTS: '1'
+      TESTDESK_REAL_DOTNET_TESTS: '1'
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_GENERATE_ASPNET_CERTIFICATE: 'false'
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: '22'
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+        with:
+          dotnet-version: |
+            8.0.x
+            10.0.x
+      - name: Configure Windows Rust linker environment
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio/Installer/vswhere.exe'
+          $installation = & $vswhere -latest -products '*' -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath
+          if (!$installation) { throw 'Visual C++ desktop build tools are required for Cargo integration tests' }
+          Import-Module (Join-Path $installation 'Common7/Tools/Microsoft.VisualStudio.DevShell.dll')
+          Enter-VsDevShell -VsInstallPath $installation -SkipAutomaticLocation -DevCmdArguments '-arch=amd64 -host_arch=amd64'
+          foreach ($name in @('PATH', 'LIB', 'LIBPATH', 'INCLUDE')) {
+            "$name=$([Environment]::GetEnvironmentVariable($name))" >> $env:GITHUB_ENV
+          }
+      - name: Prepare isolated provider fixtures
+        shell: bash
+        run: |
+          echo "TESTDESK_CONFIG_HOME=$RUNNER_TEMP/testdesk-provider-config" >> "$GITHUB_ENV"
+          rustc --version
+          cargo --version
+          dotnet --list-runtimes
+          npm install --global npm@11.6.2 --ignore-scripts --no-fund
+          python scripts/prepare_provider_tests.py --root "$RUNNER_TEMP/testdesk-providers"
+          echo "$RUNNER_TEMP/testdesk-providers/node/node_modules/.bin" >> "$GITHUB_PATH"
+      - name: Exercise real providers and result evidence
+        shell: bash
+        run: |
+          export TESTDESK_JEST_INSTALL="$RUNNER_TEMP/testdesk-providers/node"
+          export TESTDESK_VITEST_FIXTURE="$RUNNER_TEMP/testdesk-providers/node"
+          go test ./internal/manager -count=1 -timeout=25m
+
+  vulnerabilities:
+    name: Vulnerabilities (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-24.04, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Install Linux desktop dependencies
+        if: runner.os == 'Linux'
+        run: bash scripts/install_linux_deps.sh
+      - name: Scan production code for known vulnerabilities
+        shell: bash
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 -tags=production,webkit2_41 ./...
+
+  workflows:
+    name: Workflow syntax
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: false
+      - name: Check workflow syntax and expressions
+        run: go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12

@@ -1,0 +1,29 @@
+# GitNexus should index the maintained source, tests, scripts and documentation only.
+# Local state, generated binaries and generated Wails bindings add noise without
+# contributing stable implementation relationships.
+.git/
+.cache/
+.gitnexus/
+.testdesk-cache/
+.testdesk-validation/
+**/.testdesk/
+build/
+dist/
+node_modules/
+test-results/
+coverage/
+vendor/
+internal/desktop/assets/wailsjs/
+*.exe
+*.dll
+*.log
+*.out
+*.test
+*.tmp
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+.env
+.env.*
+*.local
