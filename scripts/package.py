@@ -9,13 +9,34 @@ from pathlib import Path
 import shutil
 import subprocess
 import sys
+import time
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
+ATTEMPTS = 3
+
+
+def run_step(label, command, retries=1, **kwargs):
+    """Run a command, retrying a network-dependent one, and name the step in the failure message.
+
+    A bare CalledProcessError says which command died but not which phase of the package
+    build it belonged to, which made one CI failure hard to attribute.
+    """
+    for attempt in range(1, retries + 1):
+        try:
+            subprocess.run(command, check=True, **kwargs)
+            return
+        except subprocess.CalledProcessError as error:
+            print(f'{label} failed (attempt {attempt} of {retries}, exit code {error.returncode}): {" ".join(map(str, command))}',
+                  file=sys.stderr, flush=True)
+            if attempt == retries:
+                sys.exit(f'{label} failed.')
+            time.sleep(attempt * 5)
+
+
 def go_output(*args):
     return subprocess.check_output(['go', *args], cwd=ROOT, text=True).strip()
-
 
 def environment_with_wails():
     """Return an environment whose PATH has the Wails CLI matching go.mod, installing it when needed."""
@@ -27,7 +48,8 @@ def environment_with_wails():
     wails = shutil.which('wails', path=env['PATH'])
     found = subprocess.run([wails, 'version'], capture_output=True, text=True, env=env).stdout if wails else ''
     if wanted not in found:
-        subprocess.run(['go', 'install', f'github.com/wailsapp/wails/v2/cmd/wails@{wanted}'], cwd=ROOT, check=True, env=env)
+        run_step('Installing the Wails CLI', ['go', 'install', f'github.com/wailsapp/wails/v2/cmd/wails@{wanted}'],
+                 retries=ATTEMPTS, cwd=ROOT, env=env)
     return env
 
 
@@ -50,9 +72,9 @@ def main():
                  str(ROOT / 'scripts' / 'windows' / 'Build-TestDesk.ps1'), '-OutputDirectory', str(stage)]
     else:
         build = ['bash', str(ROOT / 'scripts' / 'build.sh')]
-    subprocess.run(build, cwd=ROOT, check=True, env=env)
-    subprocess.run([sys.executable, str(ROOT / 'scripts' / 'package_release.py'),
-                    '--source', str(stage), '--output', str(output)], cwd=ROOT, check=True, env=env)
+    run_step('Building the desktop app and CLI', build, cwd=ROOT, env=env)
+    run_step('Archiving the package', [sys.executable, str(ROOT / 'scripts' / 'package_release.py'),
+                                       '--source', str(stage), '--output', str(output)], cwd=ROOT, env=env)
 
 
 if __name__ == '__main__':

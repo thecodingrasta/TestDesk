@@ -68,6 +68,7 @@ jobs:
           python-version: '3.12'
       - name: Install Linux desktop dependencies
         if: runner.os == 'Linux'
+        timeout-minutes: 10
         run: bash scripts/install_linux_deps.sh
       - name: Build and archive the native package
         run: python scripts/package.py
@@ -108,7 +109,8 @@ jobs:
           path: dist
       - name: Install Linux runtime libraries only
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libgtk-3-0t64 libwebkit2gtk-4.1-0 libayatana-appindicator3-1
+        timeout-minutes: 10
+        run: bash scripts/install_linux_deps.sh --runtime
       - name: Ensure Windows WebView2 runtime
         if: runner.os == 'Windows'
         shell: pwsh

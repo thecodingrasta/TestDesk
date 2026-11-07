@@ -5,9 +5,21 @@ cd "$(dirname "$0")/.."
 output="${TESTDESK_OUTPUT:-dist}"
 command -v go >/dev/null
 command -v wails >/dev/null
+
+# Module downloads depend on the network. A runner's transient fetch error should cost a retry, not the job.
+retry() {
+  local attempt
+  for attempt in 1 2 3; do
+    if "$@"; then return 0; fi
+    echo "attempt $attempt of 3 failed: $*" >&2
+    sleep $((attempt * 5))
+  done
+  return 1
+}
+
 expected=$(go list -m -f '{{.Version}}' github.com/wailsapp/wails/v2)
 wails version | grep -q "$expected" || { echo "Install Wails $expected: go install github.com/wailsapp/wails/v2/cmd/wails@$expected" >&2; exit 1; }
-go mod download
+retry go mod download
 case "$(uname -s)" in
   Linux) wails build -clean -trimpath -skipbindings -skipembedcreate -m -nosyncgomod -tags webkit2_41 -o testdesk ;;
   Darwin) wails build -clean -trimpath -skipbindings -skipembedcreate -m -nosyncgomod ;;

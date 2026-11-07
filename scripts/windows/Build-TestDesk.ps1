@@ -16,8 +16,14 @@ try {
     if ($LASTEXITCODE -ne 0 -or ($wailsVersion -join " ") -notmatch [regex]::Escape($expected)) {
         throw "Install Wails ${expected}: go install github.com/wailsapp/wails/v2/cmd/wails@$expected"
     }
-    & go mod download
-    if ($LASTEXITCODE -ne 0) { throw "Go module download failed." }
+    # A runner's transient network error should cost a retry, not the job.
+    for ($attempt = 1; $attempt -le 3; $attempt++) {
+        & go mod download
+        if ($LASTEXITCODE -eq 0) { break }
+        if ($attempt -eq 3) { throw "Go module download failed after 3 attempts." }
+        Write-Warning "Go module download failed (attempt $attempt of 3)."
+        Start-Sleep -Seconds ($attempt * 5)
+    }
     # All embedded assets and bindings are checked in. Skip Wails' legacy
     # package loader, which cannot read the patched Go toolchain's export data.
     & wails build -clean -platform $Platform -webview2 error -skipbindings -skipembedcreate -m -nosyncgomod -o TestDesk.exe -trimpath

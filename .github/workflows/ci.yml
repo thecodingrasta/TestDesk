@@ -50,6 +50,7 @@ jobs:
         run: echo "TESTDESK_CONFIG_HOME=$RUNNER_TEMP/testdesk-ci-config" >> "$GITHUB_ENV"
       - name: Install Linux desktop dependencies
         if: runner.os == 'Linux'
+        timeout-minutes: 10
         run: bash scripts/install_linux_deps.sh
       - name: Select Linux WebKit ABI
         if: runner.os == 'Linux'
@@ -163,6 +164,7 @@ jobs:
           cache: false
       - name: Install Linux desktop dependencies
         if: runner.os == 'Linux'
+        timeout-minutes: 10
         run: bash scripts/install_linux_deps.sh
       - name: Scan production code for known vulnerabilities
         shell: bash
