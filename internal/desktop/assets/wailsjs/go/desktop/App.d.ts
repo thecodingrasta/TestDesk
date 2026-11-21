@@ -39,13 +39,15 @@ export function RefreshProject(arg1:string,arg2:boolean):Promise<desktop.Workspa
 
 export function RenameProject(arg1:string,arg2:string):Promise<desktop.StartupState>;
 
+export function RerunFailed(arg1:string):Promise<domain.Run>;
+
 export function ResizeWindow(arg1:number,arg2:number):Promise<void>;
 
 export function ResetWidgetPosition():Promise<void>;
 
 export function RunTests(arg1:manager.RunRequest):Promise<domain.Run>;
 
-export function SaveUI(arg1:string,arg2:string,arg3:number):Promise<domain.UIConfig>;
+export function SaveUI(arg1:string,arg2:string,arg3:number,arg4:string):Promise<domain.UIConfig>;
 
 export function SetCompactExpanded(arg1:boolean):Promise<void>;
 

@@ -16,6 +16,7 @@ import (
 type trayService struct {
 	app      *App
 	ready    chan struct{}
+	failed   chan struct{}
 	stopOnce sync.Once
 }
 
@@ -23,11 +24,18 @@ func startNativeTray(app *App) (*trayService, error) {
 	if app == nil {
 		return nil, errors.New("tray requires an app")
 	}
-	tray := &trayService{app: app, ready: make(chan struct{})}
+	tray := &trayService{app: app, ready: make(chan struct{}), failed: make(chan struct{})}
 	go func() {
 		runtime.LockOSThread()
 		defer runtime.UnlockOSThread()
 		systray.Run(tray.onReady, func() {})
+		// If systray.Run exits without signalling onReady (e.g. Shell_NotifyIcon failed),
+		// unblock any waiter so MCP readiness is not deadlocked.
+		select {
+		case <-tray.ready:
+		default:
+			close(tray.failed)
+		}
 	}()
 	return tray, nil
 }

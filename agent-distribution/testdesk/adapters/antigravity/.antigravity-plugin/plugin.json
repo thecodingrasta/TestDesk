@@ -1,0 +1,17 @@
+{
+  "$schema": "https://antigravity.google/schemas/v1/plugin.json",
+  "name": "testdesk",
+  "displayName": "TestDesk",
+  "description": "Find, plan, run, and diagnose tests across configured local projects via TestDesk MCP.",
+  "version": "{{VERSION}}",
+  "logo": "assets/logo.png",
+  "author": {"name": "TestDesk contributors"},
+  "homepage": "https://github.com/thecodingrasta/TestDesk",
+  "repository": "https://github.com/thecodingrasta/TestDesk",
+  "license": "GPL-3.0",
+  "suggestedPrompts": [
+    "Use TestDesk to inspect available providers and test status without running tests.",
+    "Discover and run tests matching this module, then wait for completion.",
+    "Inspect bounded diagnostics for the latest failing run and rerun failed tests after fixing."
+  ]
+}

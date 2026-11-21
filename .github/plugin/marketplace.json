@@ -1,0 +1,24 @@
+{
+  "name": "testdesk-tools",
+  "owner": {
+    "name": "TestDesk contributors"
+  },
+  "metadata": {
+    "description": "Agent Skills and local stdio MCP integrations for TestDesk."
+  },
+  "plugins": [
+    {
+      "name": "testdesk",
+      "description": "Find, plan, run, and diagnose tests across configured local projects via TestDesk MCP.",
+      "source": "agent-distribution/testdesk/plugin",
+      "author": {
+        "name": "TestDesk contributors"
+      },
+      "homepage": "https://github.com/thecodingrasta/TestDesk",
+      "repository": "https://github.com/thecodingrasta/TestDesk",
+      "license": "GPL-3.0",
+      "keywords": ["testdesk", "testing", "mcp", "agent skills", "diagnostics"],
+      "category": "Developer tools"
+    }
+  ]
+}

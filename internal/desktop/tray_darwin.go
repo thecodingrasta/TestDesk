@@ -21,6 +21,7 @@ import (
 type trayService struct {
 	app      *App
 	ready    chan struct{}
+	failed   chan struct{}
 	stopOnce sync.Once
 	stopped  atomic.Bool
 }
@@ -41,7 +42,7 @@ func startNativeTray(app *App) (*trayService, error) {
 	if len(icon) == 0 {
 		return nil, errors.New("tray icon is empty")
 	}
-	tray := &trayService{app: app, ready: make(chan struct{})}
+	tray := &trayService{app: app, ready: make(chan struct{}), failed: make(chan struct{})}
 	darwinTray.Lock()
 	darwinTray.service = tray
 	darwinTray.Unlock()

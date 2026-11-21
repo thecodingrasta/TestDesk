@@ -80,7 +80,7 @@ function buildFixtures(now = new Date()) {
 
   const projects = [
     { root: TESTDESK_ROOT, name: 'TestDesk', active: true, configured: true, lastOpened: iso(5 * 60e3), providerCount: testdeskProviders.length, testCount: testdeskTests.length },
-    { root: WORKCOPY_ROOT, name: 'Workcopy', active: true, configured: true, lastOpened: iso(42 * 60e3), providerCount: workcopyProviders.length, testCount: workcopyTests.length },
+    { root: WORKCOPY_ROOT, name: 'Workcopy', active: false, configured: true, lastOpened: iso(42 * 60e3), providerCount: workcopyProviders.length, testCount: workcopyTests.length },
   ];
 
   const ui = {
@@ -190,10 +190,10 @@ function buildFixtures(now = new Date()) {
   });
 
   const mcpTargets = [
-    { id: 'codex', name: 'Codex', description: 'OpenAI Codex CLI', scope: 'user', configPath: '~/.codex/config.toml', detected: true, installed: true, canInstall: true, commandPreview: ['testdesk', 'mcp'], manual: 'Add the TestDesk MCP server to ~/.codex/config.toml.', notes: [], manualOnly: false },
-    { id: 'claude-code', name: 'Claude Code', description: 'Anthropic Claude Code CLI', scope: 'user', configPath: '~/.claude.json', detected: true, installed: false, canInstall: true, commandPreview: ['testdesk', 'mcp'], manual: 'Register the TestDesk MCP server with Claude Code.', notes: [], manualOnly: false },
-    { id: 'opencode', name: 'OpenCode', description: 'OpenCode terminal agent', scope: 'user', configPath: '~/.config/opencode/opencode.json', detected: false, installed: false, canInstall: true, commandPreview: ['testdesk', 'mcp'], manual: 'Add a local MCP entry to opencode.json.', notes: [], manualOnly: false },
-    { id: 'antigravity', name: 'Antigravity', description: 'Google Antigravity agent IDE', scope: 'user', configPath: '~/.gemini/antigravity/mcp_config.json', detected: false, installed: false, canInstall: true, commandPreview: ['testdesk', 'mcp'], manual: 'Add a local MCP entry to mcp_config.json.', notes: [], manualOnly: false },
+    { id: 'codex', name: 'Codex', description: 'OpenAI Codex CLI / IDE extension stdio MCP configuration.', scope: 'User config', configPath: '~/.codex/config.toml', detected: true, installed: true, canInstall: true, commandPreview: ['testdesk', 'mcp'], manual: '[mcp_servers.testdesk]\ncommand = "C:\\\\Tools\\\\TestDesk\\\\TestDesk.exe"\nargs = ["mcp"]\nenabled = true\nstartup_timeout_sec = 20\ntool_timeout_sec = 600\n', notes: [], manualOnly: false },
+    { id: 'claude-code', name: 'Claude Code', description: 'Anthropic Claude Code CLI', scope: 'Project config', configPath: '.mcp.json', detected: true, installed: false, canInstall: true, commandPreview: ['testdesk', 'mcp'], manual: '{\n  "mcpServers": {\n    "testdesk": {\n      "command": "C:\\\\Tools\\\\TestDesk\\\\TestDesk.exe",\n      "args": ["mcp"]\n    }\n  }\n}', notes: [], manualOnly: false },
+    { id: 'opencode', name: 'OpenCode', description: 'OpenCode terminal agent', scope: 'Project config', configPath: 'opencode.json', detected: false, installed: false, canInstall: true, commandPreview: ['testdesk', 'mcp'], manual: 'Add a local MCP entry to opencode.json.', notes: [], manualOnly: false },
+    { id: 'antigravity', name: 'Antigravity', description: 'Google Antigravity agent IDE', scope: 'User config', configPath: '~/.gemini/config/mcp_config.json', detected: false, installed: false, canInstall: true, commandPreview: ['testdesk', 'mcp'], manual: 'Add a local MCP entry to mcp_config.json.', notes: [], manualOnly: false },
   ];
 
   const activeProjectsList = projects.map((p) => ({ root: p.root, name: p.name, active: true, configured: true, providerCount: p.providerCount, testCount: p.testCount, lastOpened: p.lastOpened }));

@@ -1,0 +1,11 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "testdesk-skills",
+  "version": "{{VERSION}}",
+  "description": "Guided TestDesk setup, run planning, execution, bounded diagnostics, and multi-project testing workflows.",
+  "author": {"name": "TestDesk contributors"},
+  "homepage": "https://github.com/thecodingrasta/TestDesk",
+  "repository": "https://github.com/thecodingrasta/TestDesk",
+  "license": "GPL-3.0",
+  "keywords": ["testdesk", "testing", "agent skills", "developer tools"]
+}

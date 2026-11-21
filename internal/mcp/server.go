@@ -551,21 +551,21 @@ func (s *Server) readResource(ctx context.Context, params json.RawMessage) (any,
 	}
 	switch input.URI {
 	case "testdesk://guide":
-		guideMarkdown := `# TestDesk — Code Testing Intelligence & Orchestrator
+		guideMarkdown := `# TestDesk Workflow Guide
 
 ## Core Principles
 1. Always Plan Before Broad Runs: Use testdesk_plan before queueing broad filters or entire suites.
 2. Prefer Explicit IDs: Discover stable IDs with testdesk_tests and run them with testdesk_run(testIds: [...]).
 3. Multi-Project Isolation: Each project maintains isolated queues, logs and catalogs. Pass project: "nameOrPath" to target a specific project without switching the session default.
-4. Fast Failure Iteration: After applying code edits to fix test failures, immediately run testdesk_rerun_failed() to re-test only the failed subset.
-5. Bounded Diagnostics: Never read raw terminal dumps; use testdesk_diagnostics(runId: "...", maxBytes: 4096) or testdesk_test_details(testId: "...").
+4. Fast Failure Iteration: After applying code edits to fix test failures, call testdesk_rerun_failed() to re-test only the failed subset.
+5. Bounded Diagnostics: Keep log requests small with testdesk_diagnostics(runId: "...", maxBytes: 4096) or inspect one test with testdesk_test_details(testId: "...").
 
 ## Standard Workflow
-1. testdesk_snapshot(includeTests: false) — verify idle state.
-2. testdesk_tests(query: "<module>") — find test IDs.
-3. testdesk_run(testIds: ["..."]) — execute targeted verification.
-4. testdesk_wait(timeoutMs: 30000) — await completion.
-5. If failing: testdesk_diagnostics(runId: "...") -> fix -> testdesk_rerun_failed().
+1. testdesk_snapshot(includeTests: false): verify idle state.
+2. testdesk_tests(query: "<module>"): find test IDs.
+3. testdesk_run(testIds: ["..."]): execute targeted verification.
+4. testdesk_wait(timeoutMs: 30000): await completion.
+5. If failing: testdesk_diagnostics(runId: "...", maxBytes: 4096), fix, then call testdesk_rerun_failed().
 `
 		return map[string]any{
 			"contents": []map[string]any{
@@ -694,16 +694,16 @@ func guide() map[string]any {
 	return map[string]any{
 		"workflow": []string{
 			"Start with testdesk_snapshot includeTests=false.",
-			"Use testdesk_catalog with narrow filters and limit/offset when selecting tests.",
+			"Use testdesk_tests with narrow filters and limit/offset when selecting tests.",
 			"Use testdesk_plan before broad runs so the user/agent can validate scope.",
 			"Use testdesk_run with explicit testIds where possible; use providerIds or filters for intentional bulk runs.",
-			"Poll with testdesk_snapshot or testdesk_wait; fetch diagnostics only for failing/cancelled runs.",
+			"Poll with testdesk_snapshot or testdesk_wait; request testdesk_diagnostics with maxBytes=4096 for failing runs.",
 		},
 		"filters":     []string{"providerIds", "providerKinds", "layers", "modules", "statuses", "tags", "query", "limit", "offset"},
 		"controls":    []string{"pause", "resume", "skip", "stop", "kill"},
 		"projects":    "Use testdesk_projects to list names and roots. Pass project on any project-scoped tool to target one call without changing the active project.",
 		"tokenPolicy": "Snapshots omit test lists by default. Catalog and diagnostics are paged/bounded. Prefer IDs over names once discovered.",
-		"safety":      "TestDesk only runs configured project test commands. Agents should plan broad requests first and avoid kill unless stop/skip failed.",
+		"safety":      "TestDesk only runs configured project test commands. Plan broad requests first; stop and kill share manager cancellation behavior.",
 	}
 }
 

@@ -494,6 +494,7 @@ function renderSetup() {
   if (startupState.setupError) hintParts.push(`Warning: ${startupState.setupError}`);
   $('setupHint').textContent = hintParts.join('  /  ') || 'TestDesk will create testdesk.json in this folder.';
   $('setupBackBtn').disabled = !startupState.configured;
+  $('setupBackBtn').classList.toggle('hidden', !startupState.configured);
   if (!startupState.configured && !(startupState.projects || []).length && !addProjectSheetOpen) setAddProjectSheet(true);
 }
 
@@ -511,7 +512,7 @@ function renderProjectList(projects) {
         <small>${count(project.providerCount, 'provider')} / ${count(project.testCount, 'test')} / opened ${escapeHtml(formatDate(project.lastOpened))}</small>
       </div>
       <div class="project-actions">
-        <button class="button" data-switch-project="${escapeAttr(project.root)}" ${project.configured ? '' : 'disabled'}>${project.active ? 'Active' : 'Switch'}</button>
+        ${project.active ? '<span class="pill passed" aria-label="Currently active project">Active</span>' : `<button class="button" data-switch-project="${escapeAttr(project.root)}" ${project.configured ? '' : 'disabled'}>Switch</button>`}
         <button class="button ghost" data-refresh-project="${escapeAttr(project.root)}" ${project.configured ? '' : 'disabled'}>Refresh</button>
         <button class="button ghost" data-rename-project="${escapeAttr(project.root)}" data-project-name="${escapeAttr(project.name || project.root)}">Rename</button>
         <button class="button ghost" data-forget-project="${escapeAttr(project.root)}">Forget</button>
@@ -545,9 +546,12 @@ function renderManager() {
   const unavailable = statusUnavailable();
   $('managerStatusUnavailable').classList.toggle('hidden', !unavailable);
   const pName = startupState?.projectName || 'TestDesk';
-  if ($('managerTitle').textContent !== pName) $('managerTitle').textContent = pName;
   const pRoot = startupState?.projectRoot || 'Native Go test lifecycle manager';
-  if ($('managerSubtitle').textContent !== pRoot) $('managerSubtitle').textContent = pRoot;
+  const subtitle = pName && pRoot && pName !== 'TestDesk' ? `${pName} · ${pRoot}` : pRoot;
+  if ($('managerSubtitle').textContent !== subtitle) {
+    $('managerSubtitle').textContent = subtitle;
+    $('managerSubtitle').title = subtitle;
+  }
   const pCount = String(snapshot?.providerCount ?? 0);
   if ($('providerCount').textContent !== pCount) $('providerCount').textContent = pCount;
   const tCount = String(snapshot?.testCount ?? 0);
@@ -557,6 +561,16 @@ function renderManager() {
   const recent = snapshot?.recentRuns || [];
   const lastRes = unavailable ? 'Unavailable' : formatStatus(snapshot?.paused ? 'paused' : (recent[0]?.status || snapshot?.running?.status));
   if ($('lastResult').textContent !== lastRes) $('lastResult').textContent = lastRes;
+  const rerunBtn = $('rerunFailedBtn');
+  if (rerunBtn) {
+    const selectedRecent = recent.find(r => r.id === selectedRunId) || recent[0];
+    const failedCount = !runIsActive() && selectedRecent?.failed > 0 ? selectedRecent.failed : 0;
+    rerunBtn.classList.toggle('hidden', failedCount <= 0);
+    if (failedCount > 0) {
+      rerunBtn.textContent = `Rerun Failed (${failedCount})`;
+      rerunBtn.dataset.rerunRun = selectedRecent.id;
+    }
+  }
   if (Array.isArray(snapshot?.tests)) catalogueTests = snapshot.tests;
   renderProjectSelect(startupState?.projects || []);
   renderRunPanel();
@@ -564,6 +578,7 @@ function renderManager() {
   updateFilterOptions(catalogueTests);
   renderTests(filterCatalogue(catalogueTests));
   setRunPane(runPane);
+  renderLogAttribution();
   refreshLog().catch(console.error);
 }
 
@@ -634,21 +649,38 @@ function renderRunPanel() {
 }
 
 function renderRecent(runs) {
-  const key = `${selectedRunId}:${runs.map(r => `${r.id}:${r.status}`).join('|')}`;
+  const key = `${selectedRunId}:${runs.map(r => `${r.id}:${r.status}:${r.passed}:${r.failed}`).join('|')}`;
   if (key === lastRecentRunsKey) return;
   lastRecentRunsKey = key;
-  $('recentRuns').innerHTML = runs.length ? runs.map(run => `
-    <button class="recent-item ${selectedRunId === run.id ? 'active' : ''}" data-run-id="${escapeAttr(run.id)}">
-      <span>${escapeHtml(run.id)}</span>
-      <span class="pill ${run.status}">${escapeHtml(formatStatus(run.status))}</span>
-    </button>
-  `).join('') : '<div class="empty">No run history yet.</div>';
+  $('recentRuns').innerHTML = runs.length ? runs.map(run => {
+    const durationMs = run.finishedAt && run.startedAt ? Math.max(0, new Date(run.finishedAt) - new Date(run.startedAt)) : 0;
+    const failedCount = Number(run.failed || 0);
+    return `
+    <div class="recent-item ${selectedRunId === run.id ? 'active' : ''}">
+      <button type="button" class="recent-item-main" data-run-id="${escapeAttr(run.id)}">
+        <div class="recent-item-top">
+          <span class="recent-item-title" title="${escapeAttr(run.id)}">${escapeHtml(run.id)}</span>
+          <span class="pill ${run.status}">${escapeHtml(formatStatus(run.status))}</span>
+        </div>
+        <div class="recent-item-meta">
+          <span>${run.passed || 0} passed · ${failedCount} failed · ${formatMs(durationMs)}</span>
+          <span>${escapeHtml(formatDate(run.finishedAt || run.startedAt))}</span>
+        </div>
+      </button>
+      ${failedCount > 0 ? `<div class="recent-item-actions"><button type="button" class="button danger recent-rerun-btn" data-rerun-run="${escapeAttr(run.id)}">Rerun Failed (${failedCount})</button></div>` : ''}
+    </div>
+  `;
+  }).join('') : '<div class="empty">No run history yet.</div>';
   $('recentRuns').querySelectorAll('[data-run-id]').forEach(button => button.addEventListener('click', async () => {
     selectedRunId = button.dataset.runId;
     lastRecentRunsKey = '';
     renderRecent(snapshot?.recentRuns || []);
+    renderLogAttribution();
     await refreshLog(true);
     setRunPane('active');
+  }));
+  $('recentRuns').querySelectorAll('[data-rerun-run]').forEach(button => button.addEventListener('click', async () => {
+    await rerunFailed(button.dataset.rerunRun);
   }));
 }
 
@@ -726,15 +758,17 @@ function renderTests(tests) {
     const totalCount = providerTotals.get(provider) || items.length;
     return `
       <section class="provider-group ${isCollapsed ? 'collapsed' : ''}" data-provider-id="${escapeAttr(provider)}">
-        <div class="provider-title" data-provider-header="${escapeAttr(provider)}">
-          <div class="provider-title-heading">
+        <div class="provider-title">
+          <button type="button" class="provider-toggle" data-provider-header="${escapeAttr(provider)}" aria-expanded="${String(!isCollapsed)}" aria-controls="provider-group-${escapeAttr(provider)}">
             <span class="provider-toggle-icon" aria-hidden="true">▼</span>
             <strong>${escapeHtml(providerName)}</strong>
             <span class="subtle">${totalCount} test${totalCount === 1 ? '' : 's'}</span>
-          </div>
-          <button class="button ghost" data-run-provider="${escapeAttr(provider)}">Run Provider</button>
+          </button>
+          <button type="button" class="button ghost" data-run-provider="${escapeAttr(provider)}">Run Provider</button>
         </div>
-        ${items.map(testRow).join('')}
+        <div id="provider-group-${escapeAttr(provider)}">
+          ${items.map(testRow).join('')}
+        </div>
       </section>
     `;
   }).join('') + (visibleTests.length < tests.length ? `
@@ -745,9 +779,9 @@ function renderTests(tests) {
     </div>` : '');
 
   $('testGroups').querySelectorAll('[data-provider-header]').forEach(header => {
-    header.addEventListener('click', (event) => {
-      if (event.target.closest('button,input,a,label,select')) return;
+    header.addEventListener('click', () => {
       const provider = header.dataset.providerHeader;
+      const restoreFocus = document.activeElement === header;
       if (collapsedProviders.has(provider)) {
         collapsedProviders.delete(provider);
       } else {
@@ -755,6 +789,10 @@ function renderTests(tests) {
       }
       lastTestsRenderKey = '';
       renderTests(filteredTests);
+      if (restoreFocus) {
+        const nextBtn = [...$('testGroups').querySelectorAll('[data-provider-header]')].find(el => el.dataset.providerHeader === provider);
+        nextBtn?.focus();
+      }
     });
   });
 
@@ -804,6 +842,8 @@ function renderTests(tests) {
   $('testGroups').querySelectorAll('[data-run-id]').forEach(button => {
     button.addEventListener('click', async (event) => {
       selectedRunId = event.currentTarget.dataset.runId;
+      lastRecentRunsKey = '';
+      renderRecent(snapshot?.recentRuns || []);
       await refreshLog(true);
     });
   });
@@ -885,12 +925,12 @@ function testRow(test) {
   const expanded = expandedTests.has(test.id);
   const status = test.lastStatus || 'unknown';
   const statusCell = status === 'unknown'
-    ? '<span class="status-placeholder" aria-label="No result recorded">—</span>'
+    ? '<span class="status-placeholder" aria-label="No result recorded">Not run</span>'
     : `<button class="button pill ${escapeAttr(status)}" data-test-toggle="${escapeAttr(test.id)}">${escapeHtml(formatStatus(status))}</button>`;
   return `
     <article class="test-card ${expanded ? 'expanded' : ''}">
       <div class="test-row" data-test-row="${escapeAttr(test.id)}">
-        <input class="check" type="checkbox" data-test-check="${escapeAttr(test.id)}" ${selected.has(test.id) ? 'checked' : ''}/>
+        <input class="check" type="checkbox" data-test-check="${escapeAttr(test.id)}" aria-label="Select ${escapeAttr(test.name || test.fullName || test.id)}" ${selected.has(test.id) ? 'checked' : ''}/>
         ${statusCell}
         <span class="meta">${escapeHtml(test.layer || '--')}</span>
         <button class="name-cell" data-test-toggle="${escapeAttr(test.id)}"><strong>${escapeHtml(test.name || test.fullName)}</strong><small>${escapeHtml(test.fullName || test.selector || '')}</small></button>
@@ -995,7 +1035,11 @@ function renderMCPTargets() {
       renderMCPTargets();
       renderManualMCP();
     } catch (error) {
-      button.textContent = error.message || 'Failed';
+      const msg = error.message || String(error) || 'Failed to install MCP configuration.';
+      mcpInstallStatus = `Install failed for ${button.dataset.installMcp}: ${msg}`;
+      if ($('mcpInstallStatus')) $('mcpInstallStatus').textContent = mcpInstallStatus;
+      showToast(msg);
+      button.textContent = 'Failed';
       setTimeout(() => { button.textContent = original; button.disabled = false; }, 1800);
     }
   }));
@@ -1160,9 +1204,35 @@ function debounce(fn, ms) {
   return (...args) => { clearTimeout(timeout); timeout = setTimeout(() => fn(...args), ms); };
 }
 
+function renderLogAttribution() {
+  const badge = $('logSourceBadge');
+  const returnBtn = $('returnLiveOutputBtn');
+  if (!badge || !returnBtn) return;
+  const liveId = snapshot?.running?.id || '';
+  const latestId = snapshot?.recentRuns?.[0]?.id || '';
+  const viewedId = activeRunId();
+  if (!viewedId) {
+    badge.textContent = '';
+    returnBtn.classList.add('hidden');
+    return;
+  }
+  const viewingLive = Boolean(liveId && viewedId === liveId);
+  const viewingLatest = Boolean(!liveId && viewedId === latestId);
+  if (viewingLive) {
+    badge.textContent = `Live · ${viewedId}`;
+    returnBtn.classList.add('hidden');
+  } else {
+    const runObj = [snapshot?.running, ...(snapshot?.recentRuns || [])].find(r => r && r.id === viewedId);
+    const statusText = runObj ? ` (${formatStatus(runObj.status)})` : '';
+    badge.textContent = `Saved · ${viewedId}${statusText}`;
+    returnBtn.classList.toggle('hidden', viewingLatest || (!liveId && !latestId));
+  }
+}
+
 async function refreshLog(force = false) {
   if (logRefreshInFlight) return;
   if (mode !== 'manager' && !force) return;
+  renderLogAttribution();
   const runId = activeRunId();
   if (!runId) {
     if ($('logOutput').textContent !== 'No output yet.' && !lastDiagnostics?.log) {
@@ -1440,15 +1510,26 @@ async function resetWidgetPosition() {
   showToast('Compact controller position reset.');
 }
 
+let lastSheetTrigger = null;
+
 function setAddProjectSheet(open) {
-  addProjectSheetOpen = Boolean(open);
+  const next = Boolean(open);
+  if (next && !addProjectSheetOpen) {
+    lastSheetTrigger = document.activeElement instanceof HTMLElement ? document.activeElement : $('openAddProjectBtn');
+  }
+  addProjectSheetOpen = next;
   $('addProjectSheet').classList.toggle('hidden', !addProjectSheetOpen);
   $('addProjectBackdrop').classList.toggle('hidden', !addProjectSheetOpen);
   document.body.classList.toggle('sheet-open', addProjectSheetOpen);
+  document.querySelectorAll('#setup > .app-header, #setup > .page-scroll').forEach(el => {
+    el.inert = addProjectSheetOpen;
+  });
   if (addProjectSheetOpen) {
     requestAnimationFrame(() => $('projectPathInput').focus());
   } else {
-    $('openAddProjectBtn').focus();
+    const target = lastSheetTrigger && lastSheetTrigger.isConnected ? lastSheetTrigger : $('openAddProjectBtn');
+    target?.focus();
+    lastSheetTrigger = null;
   }
 }
 
@@ -1462,6 +1543,23 @@ async function runRequest(request) {
   await refresh(false);
   await refreshLog(true);
   if (startupState?.ui?.widgetMode !== 'off') setMode('compact');
+}
+
+async function rerunFailed(runID = '') {
+  try {
+    if (mode === 'manager') {
+      runInitiatedFromManager = true;
+    }
+    const run = await call('RerunFailed', runID || '');
+    selectedRunId = run.id || '';
+    selected.clear();
+    setRunPane('active');
+    await refresh(false);
+    await refreshLog(true);
+    if (startupState?.ui?.widgetMode !== 'off') setMode('compact');
+  } catch (error) {
+    showToast(error.message || String(error));
+  }
 }
 
 async function discover() {
@@ -1555,11 +1653,17 @@ async function init() {
 function initInspectorResizer() {
   const resizer = $('inspectorResizer');
   if (!resizer) return;
+  const applyRunsWidth = (width) => {
+    const clamped = Math.max(320, Math.min(700, width));
+    document.documentElement.style.setProperty('--runs-width', `${clamped}px`);
+    resizer.setAttribute('aria-valuenow', String(Math.round(clamped)));
+    return clamped;
+  };
   const savedWidth = localStorage.getItem('testdesk_runs_width');
   if (savedWidth) {
     const parsed = Number.parseInt(savedWidth, 10);
     if (!Number.isNaN(parsed) && parsed >= 320) {
-      document.documentElement.style.setProperty('--runs-width', `${parsed}px`);
+      applyRunsWidth(parsed);
     }
   }
 
@@ -1577,11 +1681,20 @@ function initInspectorResizer() {
     document.body.style.userSelect = 'none';
   });
 
+  resizer.addEventListener('keydown', (e) => {
+    if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+    e.preventDefault();
+    const runsEl = document.querySelector('.runs');
+    const current = runsEl ? runsEl.getBoundingClientRect().width : 360;
+    const step = e.shiftKey ? 40 : 16;
+    const next = applyRunsWidth(current + (e.key === 'ArrowRight' ? step : -step));
+    localStorage.setItem('testdesk_runs_width', String(Math.round(next)));
+  });
+
   document.addEventListener('mousemove', (e) => {
     if (!isDragging) return;
     const delta = e.clientX - startX;
-    const newWidth = Math.max(320, Math.min(700, startWidth + delta));
-    document.documentElement.style.setProperty('--runs-width', `${newWidth}px`);
+    applyRunsWidth(startWidth + delta);
   });
 
   document.addEventListener('mouseup', () => {
@@ -1637,6 +1750,14 @@ $('runSelectedBtn')?.addEventListener('click', async () => {
   await runRequest({ testIds: [...selected] });
 });
 $('runFilteredBtn')?.addEventListener('click', async () => { await runRequest({ filter: filter() }); });
+$('rerunFailedBtn')?.addEventListener('click', async (event) => { await rerunFailed(event.currentTarget.dataset.rerunRun || ''); });
+$('returnLiveOutputBtn')?.addEventListener('click', async () => {
+  selectedRunId = '';
+  lastRecentRunsKey = '';
+  renderRecent(snapshot?.recentRuns || []);
+  await refreshLog(true);
+  $('logOutput')?.focus();
+});
 $('selectFilteredBtn')?.addEventListener('click', selectAllFiltered);
 $('clearSelectionBtn')?.addEventListener('click', clearSelection);
 $('toggleAllProvidersBtn')?.addEventListener('click', () => {
@@ -1708,7 +1829,7 @@ if ($('installSkillsBtn')) {
 }
 document.addEventListener('keydown', (event) => {
   if (event.key === 'Escape' && addProjectSheetOpen) setAddProjectSheet(false);
-  if ((event.altKey && (event.key === 'm' || event.key === 'M')) || event.key === 'F10') {
+  if (event.altKey && (event.key === 'm' || event.key === 'M') && startupState?.configured) {
     setMode('manager').catch(console.error);
   }
 });

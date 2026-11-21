@@ -32,6 +32,7 @@ const (
 	TargetClaudeDesktop TargetID = "claude-desktop"
 	TargetAntigravity   TargetID = "antigravity"
 	TargetCursor        TargetID = "cursor"
+	TargetVSCode        TargetID = "vscode"
 )
 
 type Workspace struct {
@@ -114,7 +115,7 @@ func (i Installer) Install(target TargetID) (Workspace, error) {
 		err = i.installCursorGemini()
 	case TargetWindsurf:
 		err = i.installWindsurf()
-	case TargetCline:
+	case TargetCline, TargetVSCode:
 		err = i.installCline()
 	case TargetOpenCode:
 		err = i.installOpenCode()
@@ -140,7 +141,8 @@ func (i Installer) Install(target TargetID) (Workspace, error) {
 			(target == TargetClaudeCode && workspace.ID == TargetClaude) ||
 			(target == TargetClaudeDesktop && workspace.ID == TargetClaude) ||
 			(target == TargetAntigravity && workspace.ID == TargetCursorGemini) ||
-			(target == TargetCursor && workspace.ID == TargetCursorGemini) {
+			(target == TargetCursor && workspace.ID == TargetCursorGemini) ||
+			(target == TargetVSCode && workspace.ID == TargetCline) {
 			workspace.BackupPath = backupPath
 			return workspace, nil
 		}
@@ -184,7 +186,7 @@ func (i Installer) targetPath(target TargetID) (string, error) {
 		return filepath.Join(i.ProjectRoot, ".cursor", "mcp.json"), nil
 	case TargetWindsurf:
 		return filepath.Join(homeDir(), ".codeium", "windsurf", "mcp_config.json"), nil
-	case TargetCline:
+	case TargetCline, TargetVSCode:
 		return filepath.Join(i.ProjectRoot, ".vscode", "mcp.json"), nil
 	case TargetOpenCode:
 		return filepath.Join(i.ProjectRoot, "opencode.json"), nil
@@ -212,6 +214,8 @@ tool_timeout_sec = 600
 `, ServerID, i.BinaryPath)
 	case TargetOpenCode:
 		return mustJSON(map[string]any{"$schema": "https://opencode.ai/config.json", "mcp": map[string]any{ServerID: map[string]any{"type": "local", "command": []string{i.BinaryPath, "mcp"}, "enabled": true, "timeout": 600000}}})
+	case TargetCline, TargetVSCode:
+		return mustJSON(map[string]any{"servers": map[string]any{ServerID: map[string]any{"type": "stdio", "command": i.BinaryPath, "args": []string{"mcp"}}}})
 	default:
 		return mustJSON(map[string]any{"mcpServers": map[string]any{ServerID: stdioJSON(i.BinaryPath, []string{"mcp"}, "")}})
 	}
@@ -308,12 +312,12 @@ func (i Installer) clineWorkspace() Workspace {
 	path := filepath.Join(i.ProjectRoot, ".vscode", "mcp.json")
 	return Workspace{
 		ID:          TargetCline,
-		Name:        "Cline / Roo Code / VS Code",
-		Description: "VS Code workspace MCP configuration (.vscode/mcp.json) for Cline & Roo Code.",
+		Name:        "VS Code / GitHub Copilot (.vscode/mcp.json)",
+		Description: "VS Code workspace MCP configuration (.vscode/mcp.json) using the servers schema.",
 		Scope:       "Project config",
 		ConfigPath:  path,
 		Detected:    exists(path) || exists(filepath.Join(i.ProjectRoot, ".vscode")),
-		Installed:   jsonHasServer(path, "mcpServers"),
+		Installed:   jsonHasServer(path, "servers") || jsonHasServer(path, "mcpServers"),
 		CanInstall:  true,
 	}
 }
@@ -405,7 +409,8 @@ func (i Installer) installWindsurf() error {
 
 func (i Installer) installCline() error {
 	path := filepath.Join(i.ProjectRoot, ".vscode", "mcp.json")
-	return mergeMCPJSON(path, "mcpServers", stdioJSON(i.BinaryPath, []string{"mcp"}, ""))
+	server := map[string]any{"type": "stdio", "command": i.BinaryPath, "args": []string{"mcp"}}
+	return mergeMCPJSON(path, "servers", server)
 }
 
 func (i Installer) installOpenCode() error {

@@ -9,7 +9,7 @@ if [[ "$(uname -s)" == Linux ]]; then build_tags="webkit2_41"; fi
 # Expands to nothing, or to the single word `-tags=webkit2_41`.
 tags_flag=${build_tags:+-tags=$build_tags}
 
-unformatted=$(gofmt -l cmd internal scripts/sync-agent-assets main.go)
+unformatted=$(gofmt -l cmd internal scripts/sync-agent-assets tools/agentdist main.go)
 if [[ -n "$unformatted" ]]; then printf '%s\n' "$unformatted"; exit 1; fi
 go mod verify
 go test ${tags_flag} ./... -count=1 -timeout=10m
@@ -17,6 +17,7 @@ go vet ${tags_flag} ./...
 node --check internal/desktop/assets/app.js
 node --test internal/desktop/testdata/*.test.cjs
 go run ./scripts/sync-agent-assets -check
+go run ./tools/agentdist validate --release-version "$(tr -d '\r\n' < VERSION)"
 python3 scripts/check_repository.py
 python3 scripts/check_version.py
 python3 -m unittest discover -s scripts -p 'test_*.py'

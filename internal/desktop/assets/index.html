@@ -49,7 +49,6 @@
           <div class="compact-stats" aria-live="polite"><span class="pass-stat"><strong id="widgetPassed">0</strong> passed</span><span class="fail-stat"><strong id="widgetFailed">0</strong> failed</span><span id="widgetProgressText"></span></div>
         </div>
       </div>
-      <button class="icon widget-close" id="closeWidgetBtn" data-tooltip="Hide Widget" aria-label="Hide Widget"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 7l10 10M17 7L7 17"/></svg></button>
       <div class="controls">
         <button class="icon primary" id="widgetActionBtn" data-tooltip="Run All Tests" aria-label="Run All Tests">
           <svg class="play-glyph" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path class="fill-icon" d="M7.25 4.8a1.4 1.4 0 0 1 2.1-1.2l9.2 7a1.75 1.75 0 0 1 0 2.8l-9.2 7a1.4 1.4 0 0 1-2.1-1.2z"/></svg>
@@ -59,6 +58,7 @@
         <button class="icon" id="skipBtn" data-tooltip="Skip Current Test" aria-label="Skip Current Test"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path class="fill-icon" d="M5.5 5.1a1.25 1.25 0 0 1 1.9-1.05l8.15 6.05a1.35 1.35 0 0 1 0 2.15L7.4 18.3a1.25 1.25 0 0 1-1.9-1.05z"/><rect x="17.2" y="4.5" width="2.6" height="15" rx="1.2"/></svg></button>
         <button class="icon danger" id="stopBtn" data-tooltip="Stop Active Run" aria-label="Stop Active Run"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="5" y="5" width="14" height="14" rx="2.4"/></svg></button>
         <button class="icon" id="openBtn" data-tooltip="Open Manager" aria-label="Open Manager"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 17L17.5 6.5M9 6.5h8.5V15"/></svg></button>
+        <button class="icon widget-close" id="closeWidgetBtn" data-tooltip="Hide to Tray" aria-label="Hide to Tray"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 7l10 10M17 7L7 17"/></svg></button>
       </div>
     </section>
 
@@ -103,8 +103,8 @@
       </header>
       <div id="managerStatusUnavailable" class="hint hidden" role="status">Status unavailable. Displayed project and test information may be out of date.</div>
       <section class="summary-grid" aria-label="Test summary"><div class="metric"><span>Providers</span><strong id="providerCount">0</strong></div><div class="metric"><span>Discovered Tests</span><strong id="testCount">0</strong></div><div class="metric"><span>Queued</span><strong id="queueCount">0</strong></div><div class="metric"><span>Last Result</span><strong id="lastResult">—</strong></div></section>
-      <section class="filters" aria-label="Filter tests"><input id="queryInput" placeholder="Search tests, modules, tags…" /><select id="providerFilter"><option value="">All Providers</option></select><select id="layerFilter"><option value="">All Layers</option><option value="frontend">Frontend</option><option value="backend">Backend</option><option value="e2e">E2E</option><option value="integration">Integration</option><option value="unit">Unit</option><option value="component">Component</option></select><select id="moduleFilter"><option value="">All Modules</option></select><select id="statusFilter"><option value="">Any Status</option><option value="unknown">Unknown</option><option value="passed">Passed</option><option value="failed">Failed</option><option value="skipped">Skipped</option><option value="cancelled">Stopped</option><option value="timed_out">Timed Out</option></select><input id="tagInput" placeholder="Tags, comma separated" /></section>
-      <section class="bulk-actions"><div><strong id="filteredCount">0</strong> filtered <span aria-hidden="true">·</span> <span id="selectedCount">0 selected</span></div><div><button id="selectFilteredBtn" class="button ghost">Select All Filtered</button><button id="clearSelectionBtn" class="button ghost">Clear</button><button id="runSelectedBtn" class="button primary">Run Selected</button><button id="runFilteredBtn" class="button">Run All Filtered</button><button id="copyDiagBtn" class="button ghost">Copy Diagnostics</button></div></section>
+      <section class="filters" aria-label="Filter tests"><input id="queryInput" aria-label="Search tests, modules, tags" placeholder="Search tests, modules, tags…" /><select id="providerFilter" aria-label="Filter by provider"><option value="">All Providers</option></select><select id="layerFilter" aria-label="Filter by layer"><option value="">All Layers</option><option value="frontend">Frontend</option><option value="backend">Backend</option><option value="e2e">E2E</option><option value="integration">Integration</option><option value="unit">Unit</option><option value="component">Component</option></select><select id="moduleFilter" aria-label="Filter by module"><option value="">All Modules</option></select><select id="statusFilter" aria-label="Filter by status"><option value="">Any Status</option><option value="unknown">Unknown</option><option value="passed">Passed</option><option value="failed">Failed</option><option value="skipped">Skipped</option><option value="cancelled">Stopped</option><option value="timed_out">Timed Out</option></select><input id="tagInput" aria-label="Filter by tags" placeholder="Tags, comma separated" /></section>
+      <section class="bulk-actions"><div><strong id="filteredCount">0</strong> filtered <span aria-hidden="true">·</span> <span id="selectedCount">0 selected</span></div><div><button id="selectFilteredBtn" class="button ghost">Select All Filtered</button><button id="clearSelectionBtn" class="button ghost">Clear</button><button id="runSelectedBtn" class="button primary">Run Selected</button><button id="runFilteredBtn" class="button">Run All Filtered</button><button id="rerunFailedBtn" class="button danger hidden">Rerun Failed</button><button id="copyDiagBtn" class="button ghost">Copy Diagnostics</button></div></section>
       <section class="content">
         <aside class="runs panel">
           <div class="pane-tabs" role="tablist" aria-label="Run information">
@@ -112,17 +112,20 @@
             <button id="recentRunsTabBtn" class="pane-tab" role="tab" aria-selected="false" aria-controls="recentRunsPane">Recent Runs</button>
           </div>
           <div id="activeRunPane" class="run-tab-pane active" role="tabpanel" aria-labelledby="activeRunTabBtn">
-            <div class="section-head"><h2>Active run</h2><button id="copyOutputBtn" class="button ghost">Copy Output</button></div>
+            <div class="section-head"><h2>Active run</h2></div>
             <div id="runPanel" class="run-panel empty">No active run.</div>
-            <div class="section-head"><h2>Live output</h2></div>
-            <pre id="logOutput" class="log-output">No output yet.</pre>
+            <div class="section-head log-head">
+              <div class="log-title-wrap"><h2>Output</h2><span id="logSourceBadge" class="subtle"></span></div>
+              <div class="log-head-actions"><button id="returnLiveOutputBtn" class="button ghost hidden">View Active Run</button><button id="copyOutputBtn" class="button ghost">Copy Output</button></div>
+            </div>
+            <pre id="logOutput" class="log-output" tabindex="-1">No output yet.</pre>
           </div>
           <div id="recentRunsPane" class="run-tab-pane hidden" role="tabpanel" aria-labelledby="recentRunsTabBtn">
             <div class="section-head"><div><h2>Recent runs</h2><span class="subtle">Select a run to load its captured output.</span></div></div>
             <div id="recentRuns" class="recent"></div>
           </div>
         </aside>
-        <div id="inspectorResizer" class="resizer-horizontal" role="separator" aria-orientation="vertical" aria-label="Resize inspector panel"></div>
+        <div id="inspectorResizer" class="resizer-horizontal" role="separator" tabindex="0" aria-orientation="vertical" aria-label="Resize inspector panel" aria-valuemin="320" aria-valuemax="700" aria-valuenow="360"></div>
         <section class="tests panel">
           <div class="tests-head"><div><h2>Tests by provider</h2><span id="listHint" class="subtle">Select a test or expand details</span></div><div><button id="toggleAllProvidersBtn" class="button ghost">Collapse All</button></div></div>
           <div id="catalogLoader" class="catalog-loader hidden" role="status" aria-live="polite"><span class="spinner" aria-hidden="true"></span><strong id="catalogLoaderLabel">Loading tests…</strong></div>
@@ -141,7 +144,6 @@
           <button id="agentSettingsTabBtn" class="pane-tab" type="button" role="tab" aria-selected="false" aria-controls="agentSettingsPane">Agent Integrations</button>
         </div>
         <section id="generalSettingsPane" class="settings-section settings-pane active" role="tabpanel" aria-labelledby="generalSettingsTabBtn">
-          <div class="settings-section-head"><div><div class="eyebrow">General</div><h2 id="generalSettingsTitle">Application and widget</h2></div></div>
           <div class="settings-grid general-settings-grid">
             <div class="panel settings-card">
               <div class="section-head"><div><h3>Compact controller</h3><span class="subtle">Choose size, when it appears and how it stacks.</span></div></div>

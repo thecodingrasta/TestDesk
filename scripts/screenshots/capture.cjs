@@ -90,6 +90,8 @@ function buildHtml(shot, fixtures) {
   const snapshot = shot.snapshot === 'live' ? fixtures.liveSnapshot : shot.snapshot === 'failed' ? fixtures.failedSnapshot : fixtures.idleSnapshot;
   // The scenario waits for app.js to finish booting, then performs the shot's steps.
   const scenario = `<script>
+document.documentElement.style.maxWidth = '${shot.width}px';
+document.documentElement.style.maxHeight = '${shot.height}px';
 window.addEventListener('load', () => setTimeout(async () => {
   try {
     await new Promise((resolve) => setTimeout(resolve, 1200));

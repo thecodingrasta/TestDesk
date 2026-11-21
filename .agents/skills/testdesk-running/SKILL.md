@@ -1,15 +1,16 @@
 ---
 name: testdesk-running
-description: Plan, queue, wait for and control TestDesk test runs using explicit test IDs or narrow filters.
+description: Plan, queue, wait for, and control TestDesk test runs using catalog IDs or narrow filters. Use when refreshing discovery, previewing broad test scope, executing tests, monitoring progress, or pausing/stopping/skipping an active run.
+license: GPL-3.0
 ---
 
-# Run tests
+# Plan, run, and control tests
 
-1. Inspect the selected project's state with `testdesk_snapshot`.
-2. Find IDs with `testdesk_tests`, scoped by `project`, `providerIds`, `layers`, `modules` or `query` as needed.
-3. Use `testdesk_plan` before broad scopes. Inspect provider-wide items and overlap warnings.
-4. Call `testdesk_run` with IDs returned by discovery. Combined filters constrain every requested ID; contradictory selections are rejected.
-5. Call `testdesk_wait` with `timeoutMs: 30000`, then check `testdesk_run_status`. A wait timeout does not cancel execution.
-6. Request bounded diagnostics for a failing run and rerun the failed subset after fixing it.
+1. Inspect state with `testdesk_snapshot` (`includeTests: false`). Refresh with `testdesk_discover` only if tests are missing or newly added.
+2. Locate IDs with `testdesk_tests`, narrowed by `project`, `providerIds`, `layers`, `modules`, `statuses`, `tags`, or `query`.
+3. Call `testdesk_plan` before any provider-wide or multi-provider filter run. Check total execution items, provider-wide fallbacks, and `.NET` overlap warnings.
+4. Queue execution with `testdesk_run` using exact `testIds` when possible. Do not combine `testIds` with contradictory filters.
+5. Call `testdesk_wait` (`timeoutMs: 30000`) and inspect `testdesk_run_status`. A timeout does not cancel the run.
+6. Control runs only for the intended `project` using `testdesk_control` (`pause`, `resume`, `skip`, `stop`, `kill`). Do not stop another client's active work without authorization.
 
-`testdesk_control` accepts `pause`, `resume`, `stop`, `kill` and `skip`. Pause holds the queue; stop cancels current work and queued runs. Stop and kill currently share the manager cancellation path, so kill is not an independent escalation mechanism. Scope controls to the intended project and do not interrupt unrelated work.
+Read [selection and controls](references/selection-and-controls.md) for filter rejection rules, discovery monitoring (`testdesk_discovery_status`), progress tokens, and cancellation semantics.

@@ -1,193 +1,262 @@
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="docs/assets/testdesk-logo-on-dark.png">
-    <img src="docs/assets/testdesk-logo-on-light.png" alt="TestDesk" width="420">
+    <img src="docs/assets/testdesk-logo-on-light.png" alt="TestDesk logo" width="400">
   </picture>
 </p>
 
-<h3 align="center">One desktop app to find, run and debug the tests in all your projects. Your AI agent can drive it too.</h3>
+<p align="center">
+  <strong>Find, run, and debug project tests from one desktop window, or let your AI agent drive them safely over local MCP.</strong>
+</p>
 
 <p align="center">
   <a href="https://github.com/thecodingrasta/TestDesk/actions/workflows/ci.yml"><img alt="Native validation" src="https://github.com/thecodingrasta/TestDesk/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="https://github.com/thecodingrasta/TestDesk/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://github.com/thecodingrasta/TestDesk/actions/workflows/codeql.yml/badge.svg"></a>
-  <a href="https://github.com/thecodingrasta/TestDesk/releases"><img alt="Release" src="https://img.shields.io/github/v/release/thecodingrasta/TestDesk?include_prereleases"></a>
-  <a href="https://github.com/thecodingrasta/TestDesk/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/thecodingrasta/TestDesk/total"></a>
-  <a href="LICENSE"><img alt="Licence: GPL v3" src="https://img.shields.io/badge/licence-GPLv3-blue.svg"></a>
-  <a href="#install"><img alt="Platforms: Windows, Linux, macOS" src="https://img.shields.io/badge/platforms-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg"></a>
-  <a href="go.mod"><img alt="Source: Go 1.27+" src="https://img.shields.io/badge/source-Go%201.27%2B-00ADD8.svg"></a>
-  <a href="docs/MCP.md"><img alt="MCP: stdio" src="https://img.shields.io/badge/MCP-stdio-6750A4.svg"></a>
-  <a href="https://github.com/thecodingrasta/TestDesk/commits/main"><img alt="Last commit" src="https://img.shields.io/github/last-commit/thecodingrasta/TestDesk"></a>
-  <a href="CONTRIBUTING.md"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg"></a>
+  <a href="https://github.com/thecodingrasta/TestDesk/releases"><img alt="Releases" src="https://img.shields.io/github/v/release/thecodingrasta/TestDesk?include_prereleases"></a>
+  <a href="LICENSE"><img alt="Licence: GPL-3.0" src="https://img.shields.io/badge/licence-GPL--3.0-blue.svg"></a>
 </p>
 
-TestDesk finds the tests in your projects, runs the ones you pick and shows you what failed and why. It works with the test tools you already use (Go, .NET, Playwright, Vitest, Jest, pytest, Cargo, Maven, Gradle and Cypress) and keeps a separate queue and history for every project, so several can run at once.
+Long test runs are hard to follow when output scrolls off screen or when an AI agent runs checks in the background. TestDesk gives every project its own discovery catalog, run queue, live output viewer, and failure history. You can keep the full manager open while working, or opt to have a compact floating controller appear whenever tests are active.
 
-It doesn't install test tools or runtimes for you. If `dotnet test` or `npm test` works in your project, TestDesk can run it.
+TestDesk runs the test tools already installed on your machine (Go, .NET, Vitest, Jest, Cargo, Playwright, pytest, Maven, Gradle, and Cypress). It does not install compilers or language runtimes for you. Read the [changelog](CHANGELOG.md), [release checks](docs/RELEASING.md), and [security policy](SECURITY.md) before using it on sensitive repositories.
 
-## Screenshots
+---
 
-The manager shows every provider's tests and the live run. The compact controller stays on screen while tests run.
+## Download and run
 
-![Manager window with a live Go test run](docs/assets/screenshots/manager-overview.png)
+Grab a prebuilt binary from [GitHub Releases](https://github.com/thecodingrasta/TestDesk/releases). No Go toolchain or build steps are needed. (Wait for a published release tag or check GitHub Actions workflow artifacts on `main` if no public release is listed yet.)
 
-![Recent runs with a failed test](docs/assets/screenshots/manager-recent-failure.png)
+| Platform | CPU | Desktop app (single file) | Optional CLI | Full package (with licence texts) |
+| --- | --- | --- | --- | --- |
+| Windows 10 / 11 | x64 (`amd64`) | `TestDesk-<version>-windows-amd64.exe` | `testdesk-cli-<version>-windows-amd64.exe` | `TestDesk-<version>-windows-amd64.zip` |
+| Linux | x64 (`amd64`) | `TestDesk-<version>-linux-amd64` | `testdesk-cli-<version>-linux-amd64` | `TestDesk-<version>-linux-amd64.tar.gz` |
+| macOS | Apple silicon (`arm64`) | Inside full package (`.app`) | `testdesk-cli-<version>-macos-arm64` | `TestDesk-<version>-macos-arm64.tar.gz` |
+| macOS | Intel (`amd64`) | Inside full package (`.app`) | `testdesk-cli-<version>-macos-amd64` | `TestDesk-<version>-macos-amd64.tar.gz` |
 
-| Compact controller | Two projects in one controller |
-| --- | --- |
-| <img src="docs/assets/screenshots/compact-running.png" width="480" alt="Compact controller while tests run"> | <img src="docs/assets/screenshots/compact-multi-project.png" width="480" alt="Compact controller with TestDesk and Workcopy active"> |
+The desktop app also includes the local MCP server (`testdesk mcp`), so the app download alone is enough for agent integrations. Keep `testdesk-cli` in the same folder as the desktop app if you want the CLI to launch it automatically. On macOS, desktop apps are `.app` bundle folders, so the app is distributed inside the `.tar.gz` archive.
 
-![Projects page listing two connected workspaces](docs/assets/screenshots/projects.png)
+Not sure which Mac chip you have? Open the Apple menu, choose **About This Mac**, and check **Chip** or **Processor**.
 
-| Settings, General | Settings, Agent Integrations |
-| --- | --- |
-| <img src="docs/assets/screenshots/settings-general.png" width="640" alt="Compact controller and retention preferences"> | <img src="docs/assets/screenshots/settings-agent-integrations.png" width="640" alt="Detected agent workspaces and manual MCP setup"> |
+<details open>
+<summary><strong>Windows</strong></summary>
 
-The images are generated from sample data. [How they are made](docs/SCREENSHOTS.md) explains how to regenerate them after a UI change.
+Double-click `TestDesk-<version>-windows-amd64.exe` to launch directly without changing `PATH`.
 
-## Install
-
-Grab the download for your system from the [latest release](https://github.com/thecodingrasta/TestDesk/releases/latest). No building, no Go, no tooling.
-
-| Your system | App (a single file) | Command-line tool (optional) |
-| --- | --- | --- |
-| Windows (64-bit) | `TestDesk-<version>-windows-amd64.exe` | `testdesk-cli-<version>-windows-amd64.exe` |
-| Linux (64-bit) | `TestDesk-<version>-linux-amd64` | `testdesk-cli-<version>-linux-amd64` |
-| Mac with Apple silicon (M1 or newer) | `TestDesk-<version>-macos-arm64.tar.gz` | `testdesk-cli-<version>-macos-arm64` |
-| Mac with an Intel chip | `TestDesk-<version>-macos-amd64.tar.gz` | `testdesk-cli-<version>-macos-amd64` |
-
-The app is also the MCP server (`testdesk mcp`), so the app alone is enough for AI tools. A Mac app is a folder, so on a Mac it comes inside the `.tar.gz`. Every system also has a full package (`TestDesk-<version>-<system>-<chip>.zip` or `.tar.gz`) with the same files plus the licence texts.
-
-Not sure which Mac you have? Apple menu, then **About This Mac**, then look at **Chip** or **Processor**.
-
-**Windows**
-
-Download the `.exe`, then in PowerShell put it in a folder on your PATH and open a new terminal:
+If you also want `testdesk` and `testdesk-cli` on your user `PATH`, run this in PowerShell from your Downloads folder, then open a new terminal:
 
 ```powershell
 New-Item -ItemType Directory -Force "$HOME\bin" | Out-Null
-Move-Item .\TestDesk-[0-9]*-windows-amd64.exe "$HOME\bin\testdesk.exe"
+Move-Item .\TestDesk-*-windows-amd64.exe "$HOME\bin\testdesk.exe"
+Move-Item .\testdesk-cli-*-windows-amd64.exe "$HOME\bin\testdesk-cli.exe"
 [Environment]::SetEnvironmentVariable('Path', "$([Environment]::GetEnvironmentVariable('Path', 'User'));$HOME\bin", 'User')
 ```
 
-Run `testdesk`. To use the command-line tool too, save it as `testdesk-cli.exe` in the same folder. Or skip the PATH step and double-click the downloaded file wherever it is.
+- **SmartScreen prompt:** Builds are not code-signed yet. After verifying the checksum below, choose **More info**, then **Run anyway**.
+- **WebView2 runtime:** Windows 11 includes Microsoft Edge WebView2. On Windows 10, install the [Evergreen WebView2 Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) if the window fails to open.
 
-If SmartScreen warns you, choose **More info**, then **Run anyway**. Builds aren't code-signed yet. TestDesk needs the Microsoft Edge WebView2 runtime, which Windows 11 already has. [Get it here](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) if you're missing it.
+</details>
 
-**Linux**
+<details>
+<summary><strong>Linux</strong></summary>
+
+Install the GTK 3, WebKitGTK 4.1, and AppIndicator runtime libraries, make the binary executable, and run it (Ubuntu 24.04 package names shown):
+
 ```bash
-sudo apt-get install libgtk-3-0t64 libwebkit2gtk-4.1-0 libayatana-appindicator3-1   # Ubuntu 24.04 package names
+sudo apt-get install libgtk-3-0t64 libwebkit2gtk-4.1-0 libayatana-appindicator3-1
 install -D -m 755 TestDesk-*-linux-amd64 ~/.local/bin/testdesk
 install -D -m 755 testdesk-cli-*-linux-amd64 ~/.local/bin/testdesk-cli   # optional
 testdesk
 ```
-`~/.local/bin` is on the PATH of most distributions; add it if yours isn't. Other distributions name the three libraries differently. The tray icon may need an AppIndicator extension on GNOME.
 
-**macOS**
-1. Open the `.tar.gz` to unpack it, then drag the `.app` into **Applications**.
-2. Open it. macOS will say it can't check the app for malicious software, because it isn't notarised yet. Go to **System Settings**, then **Privacy & Security**, and choose **Open Anyway**.
+Other Linux distributions package WebKitGTK 4.1 and `libayatana-appindicator3` under their own package names. If your desktop environment is GNOME, tray icons may require an AppIndicator shell extension. `~/.local/bin` is optional; you can also mark the downloaded file `chmod +x` and run `./TestDesk-*-linux-amd64` directly.
 
-For the command-line tool, run `chmod +x testdesk-cli-*-macos-*` and move it to a PATH folder such as `/usr/local/bin/testdesk-cli`. If macOS blocks it, `xattr -d com.apple.quarantine <file>` removes the download flag.
+</details>
 
-**Check your download (optional).** Each release includes a `SHA256SUMS` file. Compare your file's hash with its line in that file. Windows (PowerShell): `Get-FileHash .\<file>`. macOS: `shasum -a 256 <file>`. Linux: `sha256sum -c SHA256SUMS --ignore-missing`.
+<details>
+<summary><strong>macOS</strong></summary>
 
-Releases are built on real Windows, Linux and macOS runners, and each download is run on a fresh machine before a draft is created. You can read exactly how in the [workflow files](.github/workflows) and [release checks](docs/RELEASING.md).
+1. Open the `.tar.gz` matching your chip (`arm64` for Apple silicon, `amd64` for Intel) and drag `TestDesk.app` to **Applications**.
+2. Open the app. Because builds are not signed or notarised yet, macOS Gatekeeper blocks the first launch. Open **System Settings**, go to **Privacy & Security**, and choose **Open Anyway**.
+
+For the optional CLI (`testdesk-cli`), mark it executable and place it in a `PATH` directory such as `/usr/local/bin/testdesk-cli`:
+
+```bash
+chmod +x testdesk-cli-*-macos-*
+xattr -d com.apple.quarantine testdesk-cli-*-macos-*   # after verifying SHA256SUMS
+```
+
+When using `testdesk-cli mcp` separately from the `.app`, set `TESTDESK_DESKTOP_EXECUTABLE` to `/Applications/TestDesk.app/Contents/MacOS/testdesk` (or invoke that binary directly with `mcp`).
+
+</details>
+
+<details>
+<summary><strong>Verify checksums</strong></summary>
+
+Every release ships a `SHA256SUMS` file covering all archives and standalone binaries. Download `SHA256SUMS` beside your file and verify before running:
+
+```powershell
+# Windows (PowerShell): compare output with the matching line in SHA256SUMS
+Get-FileHash .\TestDesk-*-windows-amd64.exe -Algorithm SHA256
+```
+
+```bash
+# Linux
+sha256sum -c SHA256SUMS --ignore-missing
+
+# macOS
+shasum -a 256 -c SHA256SUMS --ignore-missing
+```
+
+</details>
+
+---
 
 ## Your first run
 
-1. Open TestDesk and choose a project folder.
-2. Check the test tools it detected and choose **Set up / add project**.
-3. Filter the list, then run one test, a selection or a whole provider.
-4. Read the live output. If something fails, **Copy diagnostics** gives you a clean record to share.
+1. Open **TestDesk**. On first launch, choose a folder on the **Projects** screen (or click **Add Project** later from the top bar).
+2. Click **Preview Detection** to confirm the detected test providers, keep **Discover tests immediately** checked, and click **Add Project**.
+3. Filter tests in the manager by search query, provider, layer, module, status, or tags. Check individual tests or click **Run Provider** / **Run Selected**.
+4. Watch live progress and captured stdout/stderr in the **Output** pane. Click **Recent Runs** to inspect earlier logs, **Rerun Failed** to re-test only failures, or **Copy Diagnostics** for a bounded report.
+5. Open **Settings**, **General** tab to tune the compact controller:
+   - **Compact mode:** defaults to **Auto (show on run / minimise)** (`when_active`), or choose **Always visible** or **Off / manual only (tray only)**.
+   - **Widget size:** **Small (380px HUD)**, **Medium (480px balanced)** (default), or **Large (580px spacious)**.
+   - **Pin to top:** keep the controller above other windows **Always on top**, **While running tests only**, or **Off**.
 
-More in the [quickstart](docs/QUICKSTART.md).
+More detail on every screen and keyboard shortcut is in the [quickstart](docs/QUICKSTART.md) and [configuration guide](docs/CONFIGURATION.md).
 
-## Use TestDesk with an AI agent (MCP)
+---
 
-The same app runs as a local MCP server over stdio. There's no network listener and nothing extra to install.
+## Screenshots
 
-The quickest way: open **Settings**, then **MCP / agentic AI**, and click install next to your tool. TestDesk writes the configuration and keeps a backup of anything it changes.
+Select any screenshot to view it at full size. All images are rendered from sample data; [how they are captured](docs/SCREENSHOTS.md) explains the harness.
 
-By hand, Claude Code, Cursor, Antigravity, Windsurf, Cline, Kiro and most other MCP hosts take the same `mcpServers` JSON block, just in different files:
+<p align="center">
+  <a href="docs/assets/screenshots/manager-overview.png"><img src="docs/assets/screenshots/manager-overview.png" alt="Main TestDesk manager showing providers on the right, filters across the top, and the Active Run status and live output inspector on the left" width="100%"></a>
+  <br><sub><strong>Main manager.</strong> Filter by provider, layer, module, or status, resize the inspector, and monitor live run output beside test cases.</sub>
+</p>
 
-```json
-{
-  "mcpServers": {
-    "testdesk": {
-      "command": "C:\\Tools\\TestDesk\\TestDesk.exe",
-      "args": ["mcp"]
-    }
-  }
-}
-```
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="docs/assets/screenshots/manager-recent-failure.png"><img src="docs/assets/screenshots/manager-recent-failure.png" alt="Manager inspector switched to Recent Runs showing a failed run with a Rerun Failed action and saved output badge" width="100%"></a>
+      <br><sub><strong>Failure recovery.</strong> Switch to <strong>Recent Runs</strong> to inspect saved logs with clear run attribution and queue <strong>Rerun Failed</strong> directly.</sub>
+    </td>
+    <td width="50%" valign="top">
+      <a href="docs/assets/screenshots/projects.png"><img src="docs/assets/screenshots/projects.png" alt="Projects screen listing TestDesk as the active workspace and Workcopy with a Switch action, plus Add Project" width="100%"></a>
+      <br><sub><strong>Multiple projects.</strong> Add repositories, preview detected test providers, or switch between independent workspaces without losing queues.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="docs/assets/screenshots/compact-running.png"><img src="docs/assets/screenshots/compact-running.png" alt="Medium 480px compact controller displaying RUNNING status, elapsed clock, progress bar, pass/fail counters, and inline Pause, Skip, Stop, Open Manager, and Hide to Tray buttons" width="100%"></a>
+      <br><sub><strong>Compact controller (medium, 480px).</strong> Keep progress, clock, and playback controls floating in view while editing code.</sub>
+    </td>
+    <td width="50%" valign="top">
+      <a href="docs/assets/screenshots/compact-small-running.png"><img src="docs/assets/screenshots/compact-small-running.png" alt="Small 380px compact HUD fitting project selector, status, progress, and all five inline control buttons without clipping" width="100%"></a>
+      <br><sub><strong>Small 380px HUD &amp; multi-project switcher.</strong> Switch active project queues directly inside the floating bar or view <a href="docs/assets/screenshots/compact-multi-project.png">two active projects</a>.</sub>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <a href="docs/assets/screenshots/settings-general.png"><img src="docs/assets/screenshots/settings-general.png" alt="Settings General tab showing Compact controller preferences, log retention, Reset to Bottom Left, and Current workspace facts" width="100%"></a>
+      <br><sub><strong>General settings.</strong> Choose compact widget size, auto-show behavior, pinning, and log retention, or reset widget position.</sub>
+    </td>
+    <td width="50%" valign="top">
+      <a href="docs/assets/screenshots/settings-agent-integrations.png"><img src="docs/assets/screenshots/settings-agent-integrations.png" alt="Settings Agent Integrations tab listing Agent Skills installation, detected AI workspaces, and manual Codex TOML MCP snippet" width="100%"></a>
+      <br><sub><strong>Agent Integrations.</strong> Install skills and instructions into your repo, inspect detected MCP workspaces, or copy exact JSON/TOML snippets.</sub>
+    </td>
+  </tr>
+</table>
 
-Use the real path to your TestDesk executable. On Linux that's the `testdesk` file. On macOS it's the executable inside the app bundle, in `Contents/MacOS`.
+---
 
-| Host | Config file |
-| --- | --- |
-| Codex | `~/.codex/config.toml` ([TOML format](examples/codex-mcp-config.toml), not JSON) |
-| Claude Code | `.mcp.json` in your project |
-| Cursor | `.cursor/mcp.json` |
-| Antigravity | `~/.gemini/config/mcp_config.json` |
-| Windsurf | `~/.codeium/windsurf/mcp_config.json` |
-| Cline / Roo Code | `.vscode/mcp.json` |
-| OpenCode | `opencode.json` (different format: use the install button or the manual snippet in Settings) |
-| Kiro | `.kiro/settings/mcp.json` |
-| Other hosts | wherever that host reads `mcpServers` JSON |
+## Connect an AI agent (MCP and Agent Skills)
 
-Restart the host after saving, then tell your agent:
+The TestDesk binary runs a local stdio MCP server (`testdesk mcp`) with no network listener. Every project keeps an isolated queue and catalog, so agents can test across several repositories concurrently without interfering with one another.
 
-> **"Use TestDesk MCP to find the tests in this repository, run the ones my change affects and show me any failures."**
+### Easiest setup
 
-The agent can discover tests, plan and run them, read bounded diagnostics and re-run only what failed. Details, every tool and multi-project use: [agent guide](docs/AGENT_GUIDE.md) and [MCP reference](docs/MCP.md).
+1. Open **Settings**, switch to the **Agent Integrations** tab, and click **Install Agent Skills** to write the lean project skills (`SKILL.md` plus on-demand `references/`) and delimited instruction blocks (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.cursor/rules/testdesk.mdc`, `.github/copilot-instructions.md`).
+2. Under **Detected workspaces**, click **Install** beside your host (TestDesk creates a timestamped `.testdesk-backup-*` file before modifying existing configs), or pick a target under **Manual MCP setup** and click **Copy Configuration**.
+3. Restart your agent host and ask:
+
+> "Use TestDesk MCP to find the tests in this repository, run the ones my change affects, and show bounded diagnostics for any failure."
+
+### Host installation matrix
+
+| Host / Standard | Recommended route | Config or artifact | Prerequisite & scope |
+| --- | --- | --- | --- |
+| Portable Agent Plugins | `testdesk_agent_plugin_v<VER>.zip` (Devin, Hermes, Kiro Power) | Root `plugin.json`, `mcp.json`, `skills/` | `testdesk` on `PATH` |
+| Claude Code | `.claude-plugin/marketplace.json` or **Install** / `testdesk_agent_claude-code` | `.mcp.json` (`mcpServers`) + `.claude/skills/` | Repo or user config |
+| OpenAI Codex | **Install** (`codex mcp-install`), `examples/codex-mcp-config.toml`, `.agents/skills/` | `~/.codex/config.toml` (`[mcp_servers.testdesk]`) | User config; `testdesk_agent_openai-skills-only` fallback |
+| Google Antigravity | **Install** or `testdesk_agent_antigravity` | `~/.gemini/config/mcp_config.json`, `assets/logo.png` | User config |
+| Cursor | `.cursor-plugin/marketplace.json` or **Install** (`cursor`) / `testdesk_agent_cursor` | `.cursor/mcp.json` + `.cursor/rules/testdesk.mdc` | Repo config |
+| VS Code / GitHub Copilot | `.github/plugin/marketplace.json` or **Install** (`vscode` / `cline`) | `.vscode/mcp.json` (`servers.testdesk`) + `.github/` | Repo config |
+| OpenCode | **Install** (`opencode`) or `testdesk_agent_opencode` | `opencode.json` (`mcp.testdesk` local) + `.agents/skills/` | Repo config |
+| Windsurf | **Install** (`windsurf`) | `~/.codeium/windsurf/mcp_config.json` | User config |
+| Other MCP hosts | Universal manual JSON in **Settings** or `testdesk mcp` | Standard `mcpServers` JSON stdio entry | Host-managed |
+
+Plugin archives do not bundle the `TestDesk` executable. Install the matching TestDesk release first and make sure `testdesk` (or `TestDesk.exe`) is on `PATH` or referenced by absolute path. Detailed schemas, progressive-disclosure skill metrics, and verification steps live in [the agent guide](docs/AGENT_GUIDE.md) and [the MCP reference](docs/MCP.md).
+
+---
 
 ## Mac users, we need you
 
-Nobody on the project owns a Mac. Automated checks run on macOS (Intel and Apple silicon) for every change, but they can't tell us how the app feels to use.
+No maintainer owns a Mac. GitHub Actions validates and smoke-tests both `macos-arm64` (Apple silicon) and `macos-15-intel` (`amd64`) binaries and MCP startup on every change, but automated runners cannot check Gatekeeper prompts, window ergonomics, or menu bar feel by hand.
 
-If you've got a Mac, installing a release and running it against a real project is one of the most useful things you can do. Tell us what worked and what didn't with the [compatibility report](https://github.com/thecodingrasta/TestDesk/issues/new?template=compatibility_report.yml). Include your macOS version and chip. Bugs, screenshots and "it just worked" are all welcome.
+If you use a Mac, running a release build on a real project helps hugely. Open a [compatibility report](https://github.com/thecodingrasta/TestDesk/issues/new?template=compatibility_report.yml) with your **Mac chip**, **macOS version**, **TestDesk version**, what you tried, and what happened. Short "worked cleanly" notes are just as welcome as bug reports.
+
+---
 
 ## Build from source
 
-Only needed if you want to change TestDesk or run an unreleased version. You'll need Go (version in [go.mod](go.mod)), Node.js 22+ for the checks, and the [Wails CLI](https://wails.io) at the version in `go.mod`.
+Only needed when modifying TestDesk or testing an unreleased commit. Install Go (matching [go.mod](go.mod)), Node.js 22+ (for frontend JS checks; there are no frontend npm packages), Python 3.12+, and the Wails v2 CLI matching `go.mod`.
 
 ```powershell
 # Windows
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\windows\Build-TestDesk.ps1
 .\dist\TestDesk.exe
 ```
+
 ```bash
-# Linux and macOS
+# Linux (install WebKitGTK 4.1 & GTK 3 dev packages first) and macOS (Xcode CLT)
 bash scripts/build.sh
 ```
 
-Linux needs GTK and WebKit development packages first, and macOS needs the Xcode Command Line Tools. Full steps, prerequisites and updating are in the [installation guide](docs/INSTALL.md). To produce the same archive a release ships, run `python scripts/package.py`.
+See [installation and source build](docs/INSTALL.md#build-from-source-advanced) for Linux packages, validation commands, and local packaging (`python scripts/package.py`).
+
+---
 
 ## Safety and limits
 
-- Test commands run with your user permissions, the same as running them in a terminal. Only open projects you trust.
-- Logs and test artifacts can contain secrets. Check them before you share them.
-- Some tools only support running a whole file or provider, not a single case. The [provider matrix](docs/PROVIDERS.md) says which.
-- Builds aren't code-signed or notarised yet.
+- **Trusted projects only:** Provider commands in `testdesk.json` execute with your OS user permissions. Review untrusted configurations before running or installing agent assets.
+- **No secrets in reports or config:** Stdout/stderr captures are capped at 32 MiB per stream, and `testdesk_diagnostics` defaults to 32 KiB (use `maxBytes: 4096` first). Always review and redact logs before sharing.
+- **Runner granularity:** Some providers only support running an entire file or provider rather than an isolated case. Check the [provider matrix](docs/PROVIDERS.md).
+- **Unsigned builds:** Releases are not code-signed or notarised yet.
 
-Found a security problem? Please follow [SECURITY.md](SECURITY.md) and don't post it publicly.
+Report suspected security issues privately following [SECURITY.md](SECURITY.md).
+
+---
 
 ## Documentation
 
-| I want to | Read |
+| Topic | Document |
 | --- | --- |
-| Install or update | [Installation](docs/INSTALL.md) |
-| Run my first test | [Quickstart](docs/QUICKSTART.md) |
-| Configure a project or test tool | [Configuration](docs/CONFIGURATION.md), [Providers](docs/PROVIDERS.md) |
-| Connect an AI agent | [Agent guide](docs/AGENT_GUIDE.md), [MCP reference](docs/MCP.md) |
-| Work across several repositories | [Multiple projects](docs/MULTI_PROJECT.md) |
-| Fix a problem | [Troubleshooting](docs/TROUBLESHOOTING.md), [Support](SUPPORT.md) |
-| Understand the code | [Architecture](docs/ARCHITECTURE.md) |
-| See how releases are made | [Release checks](docs/RELEASING.md), [Repository automation](docs/AUTOMATION.md) |
+| Install, update, uninstall, and build | [Installation guide](docs/INSTALL.md) |
+| First run and daily workflow | [Quickstart](docs/QUICKSTART.md) |
+| `testdesk.json`, UI preferences, paths | [Configuration](docs/CONFIGURATION.md) |
+| Supported runners and result parsers | [Test providers](docs/PROVIDERS.md) |
+| Skills, plugins, and host matrix | [Agent guide](docs/AGENT_GUIDE.md) |
+| Stdio JSON-RPC tools, limits, concurrency | [MCP reference](docs/MCP.md) |
+| Managing concurrent repositories | [Multi-project operation](docs/MULTI_PROJECT.md) |
+| Common errors and recovery | [Troubleshooting](docs/TROUBLESHOOTING.md), [Support](SUPPORT.md) |
+| Design, release checks, CI, screenshots | [Architecture](docs/ARCHITECTURE.md), [Releases](docs/RELEASING.md), [Automation](docs/AUTOMATION.md), [Screenshots](docs/SCREENSHOTS.md) |
+
+---
 
 ## Contribute
 
-Bug reports, fixes, new test-tool support, docs and platform testing are all welcome. Start with [CONTRIBUTING.md](CONTRIBUTING.md). It covers running the checks locally and what a good pull request looks like. Nothing is too small. If it confused you, it will confuse someone else.
+Bug reports, new provider tests, doc fixes, and real-device platform reports are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) for local validation scripts and contribution guidelines.
 
 ## Licence
 
-[GPL-3.0](LICENSE). It allows commercial use and redistribution under its terms. Dependency licences are in the [third-party notices](THIRD_PARTY_NOTICES.md).
+Licensed under [GPL-3.0](LICENSE). Commercial use and redistribution are allowed under its terms. Third-party runtime dependencies retain their own licences in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

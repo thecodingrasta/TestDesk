@@ -132,19 +132,24 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: false
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: release-*
           merge-multiple: true
           path: dist
-      - name: Add matching source and combined checksums
+      - name: Package Agent Plugins and add matching source and combined checksums
         env:
           VERSION_TAG: ${{ inputs.version }}
         shell: bash
         run: |
           set -euo pipefail
+          go run ./tools/agentdist package --version "${VERSION_TAG#v}" --output dist
           cd dist
-          sha256sum -c -- *.sha256
+          sha256sum -c -- *.sha256 AGENT_PLUGIN_SHA256SUMS
           rm -- *.sha256
           git -C .. archive --format=tar.gz --prefix="TestDesk-$VERSION_TAG/" --output="dist/TestDesk-$VERSION_TAG-source.tar.gz" "$GITHUB_SHA"
           # Written outside dist first so the checksum file cannot list itself.

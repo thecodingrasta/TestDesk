@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "testdesk": {
+      "command": "testdesk",
+      "args": ["mcp"]
+    }
+  }
+}

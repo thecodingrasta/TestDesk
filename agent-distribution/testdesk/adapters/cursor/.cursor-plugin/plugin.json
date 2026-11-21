@@ -1,0 +1,8 @@
+{
+  "name": "testdesk",
+  "version": "1.0.0",
+  "description": "Find, plan, run, and diagnose tests across configured local projects via TestDesk MCP.",
+  "author": {"name": "TestDesk contributors"},
+  "license": "GPL-3.0",
+  "keywords": ["testdesk", "testing", "MCP", "agent skills", "diagnostics"]
+}

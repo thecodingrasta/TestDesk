@@ -2,50 +2,52 @@
 
 ## Build fails
 
-Confirm `go version` meets `go.mod`, `wails version` matches the Wails version in `go.mod` (`go list -m github.com/wailsapp/wails/v2`) and `wails doctor` finds the native prerequisites. The frontend needs no npm install. On Linux, install WebKitGTK 4.1 development packages and use `-tags webkit2_41` for native tests/builds. A headless host cannot exercise desktop interaction.
+Confirm `go version` meets `go.mod`, `wails version` matches the Wails v2 version in `go.mod` (`go list -m github.com/wailsapp/wails/v2`), and `wails doctor` reports no missing native dependencies. The frontend has no npm install step.
 
-Use the repository build scripts. They use checked-in assets and bindings and bypass Wails' older package-analysis step, which cannot read the patched Go toolchain's export data. They also prevent Wails from editing `go.mod`. If Windows cannot replace an executable in `dist`, exit that copy first or build with `-OutputDirectory` pointing to another folder.
+On Linux, install WebKitGTK 4.1 development libraries and pass `-tags webkit2_41` for native builds and tests. Always prefer the repository scripts (`Build-TestDesk.ps1`, `scripts/build.sh`, `scripts/package.py`), which pass `-skipbindings` and prevent Wails from altering `go.mod` on newer Go toolchains. If Windows locks `dist\TestDesk.exe` while rebuilding, close the running app or pass `-OutputDirectory <other-path>`.
 
 ## Windows app will not open
 
-Install WebView2 if it's missing, and check that the executable matches your CPU architecture. Download the latest release instead of running an old binary.
+Install the [Microsoft Edge WebView2 Evergreen Runtime](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) on Windows 10 if missing, confirm you downloaded the `windows-amd64` build matching your CPU, and verify the checksum against `SHA256SUMS`.
 
-## macOS says the app can't be opened
+## macOS says the app cannot be opened
 
-Packages aren't notarised. Open **System Settings**, then **Privacy & Security**, and choose **Open Anyway** for TestDesk. Make sure you downloaded the package for your chip (Apple silicon is `arm64`, Intel is `amd64`).
+Builds are not signed or notarised yet. Open **System Settings**, go to **Privacy & Security**, and click **Open Anyway** next to TestDesk after checking `SHA256SUMS`. Confirm you downloaded `arm64` for Apple silicon or `amd64` for Intel.
 
-## Tray or MCP startup is unavailable
+## Tray icon missing or MCP startup unavailable
 
-The desktop's tray-backed service must become ready before MCP is admitted. Check platform tray support and leave TestDesk running. Linux environments may require an AppIndicator extension.
+If the desktop's system tray icon fails to register on restricted desktop environments or headless Linux sessions, TestDesk still exposes the MCP loopback service after DOM startup (falling back after a 5-second tray initialization guard). On Linux GNOME desktops, install an AppIndicator extension to see the tray icon cleanly.
 
-For the standalone CLI, set `TESTDESK_DESKTOP_EXECUTABLE` if the desktop binary is not beside it. Use an absolute path in MCP configuration and restart the client after editing it. **Exit TestDesk** ends its service and connected bridges.
+When using `testdesk-cli mcp`, keep `testdesk-cli` alongside the desktop executable or set `TESTDESK_DESKTOP_EXECUTABLE` to the desktop executable's absolute path (inside `Contents/MacOS/testdesk` on macOS). Always restart your MCP client host after editing its config. Choosing **Exit TestDesk** ends the desktop owner and disconnects active bridges.
 
-## No tests, ambiguous selection or an unexpected unknown result
+## No tests, ambiguous selection, or `unknown` results
 
-Inspect provider settings and run discovery again after upgrading. Ensure the actual runner and any required reporter are installed in the project. Use IDs from the catalog; names may be ambiguous. Missing, invalid or unmatched reports do not prove that a test passed. See [provider limitations](PROVIDERS.md).
+Check provider commands in `testdesk.json` and run **Refresh Discovery** after upgrading TestDesk. Make sure the project's underlying test runner and any required reporter package (such as `jest-junit`) are installed.
 
-On Windows, npm launchers depend on `cmd.exe`. An inherited PATH longer than its 8,191-character limit can disappear inside that shell, producing misleading “not recognized” errors for installed tools. Try a fresh terminal with a shorter PATH containing the required tools, then restart TestDesk from that environment. Do not remove unrelated tool installations to diagnose this.
+Always prefer catalog IDs over bare names when running single cases. Missing, malformed, or ambiguous result reports never produce a passing outcome; TestDesk keeps unmatched items as `unknown`. See [provider limits](PROVIDERS.md).
 
-## Run is stuck or output is excessive
+On Windows, npm-based runners execute through `cmd.exe`, which silently truncates or drops `PATH` entries if the total environment `PATH` exceeds 8,191 characters. If installed JS tools fail with `"is not recognized"`, launch TestDesk from a fresh shell with a shorter `PATH`.
 
-Pause holds future queue work; it does not suspend a running process. Stop cancels current work and queued runs. Kill currently uses the same manager cancellation path. A process that escapes its group/job may require separate cleanup.
+## Run is stuck or output hits the 32 MiB cap
 
-Each stdout/stderr capture is limited to 32 MiB. If exceeded, TestDesk cancels the command and rejects its incomplete output. Reduce runner verbosity or divide the scope, then rediscover or rerun. Logs and runner-created report files still consume disk; configure retention and review disk usage.
+**Pause** stops new queued items from starting without suspending an already-running process. **Stop** (and `kill` over MCP) cancels active work and clears queued runs; child processes that detach from their Windows Job Object or POSIX process group may require manual cleanup.
 
-## Undo an agent installation
+Each stdout/stderr capture is capped at 32 MiB, including single long lines. Exceeding 32 MiB cancels the run with an explicit capture-limit error. Narrow your test filter or quiet noisy runner logging. Manage saved disk space via **Log & output retention** in **Settings**.
 
-Restore the relevant `.testdesk-backup-*` configuration or skill file and restart the client. For an installation that created a new configuration entry, remove that TestDesk entry manually. Remove only the TestDesk block from shared instruction files; preserve other project guidance.
+## Undo an agent integration or remove skills
 
-## Window or compact controller position is wrong
+Restore the timestamped `.testdesk-backup-*` config or skill file created next to the target before installation, then restart the client host. For shared instruction files (`AGENTS.md`, `CLAUDE.md`, `GEMINI.md`, `.github/copilot-instructions.md`), delete only the delimited `<!-- testdesk:start -->` through `<!-- testdesk:end -->` block.
 
-Use **Reset widget position** in Settings. Management views use native window chrome, while the compact controller is frameless. Rebuild before diagnosing a version-specific window issue. Platform behavior needs native reproduction.
+## Compact widget window or position looks wrong
 
-## Find the output of a failed run
+Open **Settings**, **General** tab, and click **Reset to Bottom Left** to restore the widget cleanly onto the primary monitor's bottom-left work area. Look under **Compact mode** if the widget is hidden when idle (`Auto` shows it only while tests are running or the manager is minimised).
 
-Open **Recent Runs** in the manager to see each completed run and its status. Select a failed run to load its captured output, then use **Copy diagnostics** for the shareable record.
+## Find logs and diagnostics from a failed run
 
-![Recent Runs tab with a failed run selected, listing the run status and its captured output](assets/screenshots/manager-recent-failure.png)
+Open the **Recent Runs** tab in the manager, click a failing run to view its saved output (`Saved · <runId>`), and click **Copy Diagnostics** or **Rerun Failed**. Click **View Active Run** to return to live output.
 
-## Collect useful diagnostics
+![Recent Runs tab with a failed run selected, showing Rerun Failed and saved output attribution](assets/screenshots/manager-recent-failure.png)
 
-Include the version/commit, OS, architecture, runner version, selected project/provider and minimal reproduction. Request bounded MCP diagnostics or copy relevant output. Redact credentials, command arguments and personal paths. See [support](../SUPPORT.md).
+## Report a problem cleanly
+
+Include your TestDesk version (`testdesk --version`), OS and CPU architecture, test runner version, affected project/provider, minimal reproduction steps, and bounded diagnostics with credentials and private paths removed. See [Support](../SUPPORT.md).

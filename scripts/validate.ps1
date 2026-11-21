@@ -3,7 +3,7 @@ param([switch]$Build)
 $ErrorActionPreference = "Stop"
 Push-Location (Split-Path -Parent $PSScriptRoot)
 try {
-    $unformatted = & gofmt -l cmd internal scripts/sync-agent-assets main.go
+    $unformatted = & gofmt -l cmd internal scripts/sync-agent-assets tools/agentdist main.go
     if ($LASTEXITCODE -ne 0 -or $unformatted) { throw "Go formatting failed: $unformatted" }
     & go mod verify
     if ($LASTEXITCODE -ne 0) { throw "Module verification failed." }
@@ -18,6 +18,9 @@ try {
     if ($LASTEXITCODE -ne 0) { throw "JavaScript tests failed." }
     & go run ./scripts/sync-agent-assets -check
     if ($LASTEXITCODE -ne 0) { throw "Agent assets are out of date." }
+    $releaseVersion = (Get-Content -Raw VERSION).Trim()
+    & go run ./tools/agentdist validate --release-version $releaseVersion
+    if ($LASTEXITCODE -ne 0) { throw "Agent distribution validation failed." }
     & python scripts/check_repository.py
     if ($LASTEXITCODE -ne 0) { throw "Repository checks failed." }
     & python scripts/check_version.py

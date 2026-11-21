@@ -1,0 +1,11 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "testdesk",
+  "version": "1.0.0",
+  "description": "Find, plan, run, and diagnose tests across configured local projects via TestDesk MCP.",
+  "author": {"name": "TestDesk contributors"},
+  "homepage": "https://github.com/thecodingrasta/TestDesk",
+  "repository": "https://github.com/thecodingrasta/TestDesk",
+  "license": "GPL-3.0",
+  "keywords": ["testdesk", "testing", "mcp", "agent skills", "diagnostics"]
+}

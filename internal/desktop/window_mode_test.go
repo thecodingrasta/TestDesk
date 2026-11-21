@@ -18,11 +18,11 @@ func TestWindowBoundsAllowResizingOnlyOnManager(t *testing.T) {
 
 	for _, mode := range []string{"setup", "settings"} {
 		bounds := boundsForWindowMode(mode, ui)
-		if bounds.MinWidth != bounds.MaxWidth || bounds.MinHeight != bounds.MaxHeight {
-			t.Errorf("%s must use fixed native dimensions: %+v", mode, bounds)
+		if bounds.Width > bounds.MaxWidth || bounds.Height > bounds.MaxHeight || bounds.MaxWidth <= 0 || bounds.MaxHeight <= 0 {
+			t.Errorf("%s must cap maximum native dimensions: %+v", mode, bounds)
 		}
-		if bounds.Width != bounds.MinWidth || bounds.Height != bounds.MinHeight {
-			t.Errorf("%s initial dimensions must match its fixed bounds: %+v", mode, bounds)
+		if bounds.MinWidth > bounds.Width || bounds.MinHeight > bounds.Height || bounds.MinWidth <= 0 || bounds.MinHeight <= 0 {
+			t.Errorf("%s minimum dimensions must allow shrinking below initial size: %+v", mode, bounds)
 		}
 	}
 }

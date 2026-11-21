@@ -133,11 +133,15 @@ func discoverCmd(args []string) error {
 	defer cancel()
 	tests, discoverErr := mgr.Discover(ctx)
 	if *jsonOut {
-		return printJSON(map[string]any{"count": len(tests), "tests": tests, "warning": errorString(discoverErr)})
+		if err := printJSON(map[string]any{"count": len(tests), "tests": tests, "warning": errorString(discoverErr)}); err != nil {
+			return err
+		}
+		return discoverErr
 	}
 	fmt.Printf("discovered %d test(s)\n", len(tests))
 	if discoverErr != nil {
 		fmt.Println("warning:", discoverErr)
+		return discoverErr
 	}
 	return nil
 }
@@ -333,7 +337,7 @@ func mcpTargetsCmd(args []string) error {
 func mcpInstallCmd(args []string) error {
 	fs := flag.NewFlagSet("mcp-install", flag.ExitOnError)
 	project := fs.String("project", ".", "project root")
-	target := fs.String("target", "", "codex|claude-code|opencode|antigravity")
+	target := fs.String("target", "", "codex|claude-code|antigravity|cursor|windsurf|cline|vscode|opencode")
 	if err := fs.Parse(args); err != nil {
 		return err
 	}
@@ -433,23 +437,28 @@ func errorString(err error) string {
 	return err.Error()
 }
 
-func usage() {
-	fmt.Print(`TestDesk ` + version + `
+const cliUsage = `TestDesk ` + version + `
 
 Usage:
-  testdesk init --project <path>
-  testdesk discover --project <path>
-  testdesk list --project <path> [--provider vitest] [--query login]
-  testdesk run --project <path> [--tests id1,id2 | --providers playwright,vitest | --query login]
-  testdesk status --project <path>
-  testdesk control --project <path> --action pause|resume|stop|kill|skip
-  testdesk diagnostics --project <path> --run <run-id>
-  testdesk mcp --project <path>
-  testdesk mcp-targets --project <path>
-  testdesk mcp-install --project <path> --target codex|claude-code|opencode|antigravity
+  testdesk-cli version
+  testdesk-cli init --project <path>
+  testdesk-cli doctor --project <path>
+  testdesk-cli discover --project <path>
+  testdesk-cli list --project <path> [--provider vitest] [--query login]
+  testdesk-cli run --project <path> [--tests id1,id2 | --providers playwright,vitest | --query login]
+  testdesk-cli status --project <path>
+  testdesk-cli control --project <path> --action pause|resume|stop|kill|skip
+  testdesk-cli diagnostics --project <path> --run <run-id>
+  testdesk-cli mcp [--project <path>]
+  testdesk-cli mcp-targets --project <path>
+  testdesk-cli mcp-install --project <path> --target codex|claude-code|antigravity|cursor|windsurf|cline|vscode|opencode
+  testdesk-cli mcp-smoke --project <path>
 
 Desktop build:
-  Windows: .\scripts\windows\TestDesk.bat
+  Windows: .\scripts\windows\Build-TestDesk.ps1
   Linux/macOS: bash scripts/build.sh
-`)
+`
+
+func usage() {
+	fmt.Print(cliUsage)
 }

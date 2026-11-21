@@ -69,6 +69,10 @@ func TestInstallSkills(t *testing.T) {
 			}
 		}
 	}
+	refPath := filepath.Join(project, ".agents", "skills", "testdesk-guide", "references", "tool-contracts.md")
+	if _, err := os.Stat(refPath); err != nil {
+		t.Fatalf("expected progressive skill reference at %s: %v", refPath, err)
+	}
 
 	// Re-install should update cleanly without duplicating content
 	secondResult, err := InstallSkills(project)

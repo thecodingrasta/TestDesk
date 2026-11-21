@@ -226,31 +226,37 @@ func Run(projectRoot string, automatic ...bool) error {
 			app.mu.RLock()
 			tray := app.tray
 			app.mu.RUnlock()
-			if tray != nil {
-				go func() {
+			go func() {
+				if tray != nil {
+					timer := time.NewTimer(5 * time.Second)
 					select {
 					case <-tray.ready:
-						if startup != nil {
-							if err := startup.Ready(); err != nil {
-								return
-							}
-							select {
-							case <-startup.Done():
-								if startup.Wait() != nil {
-									return
-								}
-							case <-ctx.Done():
-								return
-							}
-						}
-						owner.SetMCPHandler(func(input io.Reader, output io.Writer) {
-							server := mcp.NewWithManagerResolver(app.managerForProject)
-							_ = server.ServeConnection(input, output)
-						})
+					case <-tray.failed:
+					case <-timer.C:
 					case <-ctx.Done():
+						timer.Stop()
+						return
 					}
-				}()
-			}
+					timer.Stop()
+				}
+				if startup != nil {
+					if err := startup.Ready(); err != nil {
+						return
+					}
+					select {
+					case <-startup.Done():
+						if startup.Wait() != nil {
+							return
+						}
+					case <-ctx.Done():
+						return
+					}
+				}
+				owner.SetMCPHandler(func(input io.Reader, output io.Writer) {
+					server := mcp.NewWithManagerResolver(app.managerForProject)
+					_ = server.ServeConnection(input, output)
+				})
+			}()
 			app.startNativeWindowMonitor()
 			app.emitLoading(app.LoadingState())
 		},
@@ -855,13 +861,33 @@ func (a *App) RunTests(request manager.RunRequest) (domain.Run, error) {
 	}
 	run, err := mgr.Run(context.Background(), request)
 	if err == nil {
-		ui := safeUI(a.uiConfig())
-		if ui.WidgetMode != domain.VisibilityOff {
-			_ = a.SetWindowMode("compact_auto")
-		}
-		_ = a.ApplyWidgetVisibility(true)
+		a.showWidgetForRun()
 	}
 	return run, err
+}
+
+func (a *App) RerunFailed(runID string) (domain.Run, error) {
+	mgr := a.manager()
+	if mgr == nil {
+		return domain.Run{}, errors.New("set up a project before running tests")
+	}
+	run, source, err := mgr.RerunFailed(context.Background(), runID)
+	if err != nil {
+		return domain.Run{}, err
+	}
+	if run.ID == "" {
+		return domain.Run{}, fmt.Errorf("no failed or interrupted tests found in run %s", source.ID)
+	}
+	a.showWidgetForRun()
+	return run, nil
+}
+
+func (a *App) showWidgetForRun() {
+	ui := safeUI(a.uiConfig())
+	if ui.WidgetMode != domain.VisibilityOff {
+		_ = a.SetWindowMode("compact_auto")
+	}
+	_ = a.ApplyWidgetVisibility(true)
 }
 
 func (a *App) Control(action string) error {
@@ -1080,9 +1106,9 @@ func (a *App) SetWindowMode(mode string) error {
 func boundsForWindowMode(mode string, ui domain.UIConfig) windowBounds {
 	switch mode {
 	case "setup":
-		return windowBounds{MinWidth: 900, MinHeight: 810, MaxWidth: 900, MaxHeight: 810, Width: 900, Height: 810}
+		return windowBounds{MinWidth: 640, MinHeight: 520, MaxWidth: 900, MaxHeight: 810, Width: 900, Height: 810}
 	case "settings":
-		return windowBounds{MinWidth: 1160, MinHeight: 795, MaxWidth: 1160, MaxHeight: 795, Width: 1160, Height: 795}
+		return windowBounds{MinWidth: 640, MinHeight: 520, MaxWidth: 1160, MaxHeight: 795, Width: 1160, Height: 760}
 	default:
 		return windowBounds{MinWidth: 920, MinHeight: 560, Width: ui.ManagerWidth, Height: ui.ManagerHeight}
 	}

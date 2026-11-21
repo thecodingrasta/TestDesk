@@ -70,6 +70,10 @@ export function RenameProject(arg1, arg2) {
   return window['go']['desktop']['App']['RenameProject'](arg1, arg2);
 }
 
+export function RerunFailed(arg1) {
+  return window['go']['desktop']['App']['RerunFailed'](arg1);
+}
+
 export function ResizeWindow(arg1, arg2) {
   return window['go']['desktop']['App']['ResizeWindow'](arg1, arg2);
 }
@@ -82,8 +86,8 @@ export function RunTests(arg1) {
   return window['go']['desktop']['App']['RunTests'](arg1);
 }
 
-export function SaveUI(arg1, arg2, arg3) {
-  return window['go']['desktop']['App']['SaveUI'](arg1, arg2, arg3);
+export function SaveUI(arg1, arg2, arg3, arg4) {
+  return window['go']['desktop']['App']['SaveUI'](arg1, arg2, arg3, arg4);
 }
 
 export function SetCompactExpanded(arg1) {

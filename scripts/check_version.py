@@ -1,4 +1,5 @@
 """Reject mismatched versions before packaging a release."""
+import json
 from pathlib import Path
 import re
 
@@ -15,6 +16,9 @@ def main():
         match = re.search(rf'const {constant} = "([^"]+)"', source)
         if not match or match[1] != expected:
             raise SystemExit(f'{name}: version differs from VERSION')
+    agentdist = json.loads((ROOT / 'agent-distribution/testdesk/agentdist.json').read_text(encoding='utf-8'))
+    if agentdist.get('defaultVersion') != expected:
+        raise SystemExit('agent-distribution/testdesk/agentdist.json: defaultVersion differs from VERSION')
     print(f'Version strings agree: {expected}')
 
 

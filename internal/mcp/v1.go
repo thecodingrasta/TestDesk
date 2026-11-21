@@ -399,55 +399,16 @@ func (s *Server) rerunFailed(ctx context.Context, args map[string]any) (any, err
 	if err != nil {
 		return nil, err
 	}
-	runID := strings.TrimSpace(stringArg(args, "runId"))
-	var targetRun *domain.Run
-	if runID != "" {
-		if runID == "." || runID == ".." || runID != filepath.Base(runID) || runID != filepath.Clean(runID) {
-			return nil, fmt.Errorf("invalid run ID %q", runID)
-		}
-		diag, err := mgr.Diagnostics(runID, 0)
-		if err != nil {
-			return nil, fmt.Errorf("load run %q: %w", runID, err)
-		}
-		if diag.Run == nil {
-			return nil, fmt.Errorf("run %q was not found", runID)
-		}
-		targetRun = diag.Run
+	run, targetRun, err := mgr.RerunFailed(ctx, stringArg(args, "runId"))
+	if err != nil {
+		return nil, err
 	}
-	if targetRun == nil {
-		snap, err := mgr.Snapshot(domain.Filter{Limit: 1})
-		if err != nil {
-			return nil, err
-		}
-		if len(snap.RecentRuns) > 0 {
-			targetRun = &snap.RecentRuns[0]
-		}
-	}
-	if targetRun == nil {
-		return nil, errors.New("no previous run found to re-run failed tests from")
-	}
-	var failedTestIDs []string
-	var failedProviderIDs []string
-	for _, item := range targetRun.Items {
-		if item.Status == domain.StatusFailed || item.Status == domain.StatusCancelled || item.Status == domain.StatusSkipped || item.Status == domain.StatusTimedOut {
-			if item.TestID != "" {
-				failedTestIDs = append(failedTestIDs, item.TestID)
-			} else if item.ProviderID != "" {
-				failedProviderIDs = append(failedProviderIDs, item.ProviderID)
-			}
-		}
-	}
-	if len(failedTestIDs) == 0 && len(failedProviderIDs) == 0 {
+	if run.ID == "" {
 		return map[string]any{
 			"message":           fmt.Sprintf("no failed or skipped tests found in run %s (status: %s)", targetRun.ID, targetRun.Status),
 			"retestedFromRunId": targetRun.ID,
 			"total":             0,
 		}, nil
-	}
-	req := manager.RunRequest{TestIDs: failedTestIDs, ProviderWideIDs: failedProviderIDs}
-	run, err := mgr.Run(ctx, req)
-	if err != nil {
-		return nil, err
 	}
 	return map[string]any{
 		"retestedFromRunId": targetRun.ID,

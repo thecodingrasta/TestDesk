@@ -1,0 +1,24 @@
+{
+  "name": "testdesk-tools",
+  "owner": {
+    "name": "TestDesk contributors"
+  },
+  "metadata": {
+    "description": "TestDesk agent plugins and skills."
+  },
+  "plugins": [
+    {
+      "name": "testdesk",
+      "source": "agent-distribution/testdesk/adapters/cursor",
+      "description": "Find, plan, run, and diagnose tests across configured local projects via TestDesk MCP.",
+      "author": {
+        "name": "TestDesk contributors"
+      },
+      "homepage": "https://github.com/thecodingrasta/TestDesk",
+      "repository": "https://github.com/thecodingrasta/TestDesk",
+      "license": "GPL-3.0",
+      "keywords": ["testdesk", "testing", "MCP", "agent skills", "diagnostics"],
+      "category": "Developer tools"
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "name": "testdesk-tools",
+  "description": "TestDesk agent plugins and skills.",
+  "owner": {
+    "name": "TestDesk contributors"
+  },
+  "plugins": [
+    {
+      "name": "testdesk",
+      "source": "./agent-distribution/testdesk/adapters/claude-code",
+      "description": "Find, plan, run, and diagnose tests across configured local projects via TestDesk MCP."
+    }
+  ]
+}

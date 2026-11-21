@@ -25,6 +25,13 @@ func TestInstallProjectJSONTargets(t *testing.T) {
 			t.Fatalf("expected %s to report installed", target)
 		}
 	}
+	vscodeData, err := os.ReadFile(filepath.Join(project, ".vscode", "mcp.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(vscodeData), `"servers"`) || !strings.Contains(string(vscodeData), `"type": "stdio"`) {
+		t.Fatalf("expected VS Code servers stdio schema in .vscode/mcp.json: %s", vscodeData)
+	}
 }
 
 func TestGlobalMCPTargetsOmitProjectArg(t *testing.T) {

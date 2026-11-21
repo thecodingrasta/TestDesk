@@ -1723,3 +1723,56 @@ func (m *Manager) WaitForIdle(ctx context.Context) error {
 func (m *Manager) Drain(ctx context.Context) error {
 	return m.WaitForIdle(ctx)
 }
+
+// RerunFailed queues a new run covering only failed, cancelled, skipped, or timed-out
+// items from runID (or the most recent run when runID is empty), preserving individual-test
+// and provider-wide scope. When no non-passing items exist, run.ID is empty and source
+// identifies the inspected run.
+func (m *Manager) RerunFailed(ctx context.Context, runID string) (domain.Run, *domain.Run, error) {
+	runID = strings.TrimSpace(runID)
+	var targetRun *domain.Run
+	if runID != "" {
+		if runID == "." || runID == ".." || runID != filepath.Base(runID) || runID != filepath.Clean(runID) {
+			return domain.Run{}, nil, fmt.Errorf("invalid run ID %q", runID)
+		}
+		diag, err := m.Diagnostics(runID, 0)
+		if err != nil {
+			return domain.Run{}, nil, fmt.Errorf("load run %q: %w", runID, err)
+		}
+		if diag.Run == nil {
+			return domain.Run{}, nil, fmt.Errorf("run %q was not found", runID)
+		}
+		targetRun = diag.Run
+	}
+	if targetRun == nil {
+		snap, err := m.Snapshot(domain.Filter{Limit: 1})
+		if err != nil {
+			return domain.Run{}, nil, err
+		}
+		if len(snap.RecentRuns) > 0 {
+			targetRun = &snap.RecentRuns[0]
+		}
+	}
+	if targetRun == nil {
+		return domain.Run{}, nil, errors.New("no previous run found to re-run failed tests from")
+	}
+	var failedTestIDs []string
+	var failedProviderIDs []string
+	for _, item := range targetRun.Items {
+		if item.Status == domain.StatusFailed || item.Status == domain.StatusCancelled || item.Status == domain.StatusSkipped || item.Status == domain.StatusTimedOut {
+			if item.TestID != "" {
+				failedTestIDs = append(failedTestIDs, item.TestID)
+			} else if item.ProviderID != "" {
+				failedProviderIDs = append(failedProviderIDs, item.ProviderID)
+			}
+		}
+	}
+	if len(failedTestIDs) == 0 && len(failedProviderIDs) == 0 {
+		return domain.Run{}, targetRun, nil
+	}
+	run, err := m.Run(ctx, RunRequest{TestIDs: failedTestIDs, ProviderWideIDs: failedProviderIDs})
+	if err != nil {
+		return domain.Run{}, targetRun, err
+	}
+	return run, targetRun, nil
+}

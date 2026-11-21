@@ -28,9 +28,11 @@ test('an idle widget presents the latest failed run outcome', () => {
   const start = source.indexOf('function renderPlayer(');
   const end = source.indexOf('\nfunction setCompactState(', start);
   assert.ok(start >= 0 && end > start);
+  const fitStart = source.indexOf('function fitCompactHeading(');
+  assert.ok(fitStart >= 0 && fitStart < start);
   const elements = new Map();
   const getElement = id => {
-    if (!elements.has(id)) elements.set(id, { classList: { add() {}, remove() {}, toggle() {} }, style: {}, textContent: '' });
+    if (!elements.has(id)) elements.set(id, { classList: { add() {}, remove() {}, toggle() {}, contains() { return false; } }, style: {}, textContent: '', querySelector: () => null });
     return elements.get(id);
   };
   const context = {
@@ -45,7 +47,7 @@ test('an idle widget presents the latest failed run outcome', () => {
   };
   const activeStart = source.indexOf('function runIsActive(');
   const activeEnd = source.indexOf('\nfunction workItemProgress(', activeStart);
-  vm.runInNewContext(`${source.slice(activeStart, activeEnd)}(${source.slice(start, end)})()`, context);
+  vm.runInNewContext(`${source.slice(activeStart, activeEnd)}\n${source.slice(fitStart, end)}\nrenderPlayer();`, context);
   assert.equal(context.label, 'Failed');
   assert.equal(context.tone, 'failed');
   assert.equal(getElement('testTitle').textContent, 'Last run: Failed');

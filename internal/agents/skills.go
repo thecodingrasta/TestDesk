@@ -2,13 +2,19 @@ package agents
 
 import (
 	"crypto/rand"
+	"embed"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io/fs"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 )
+
+//go:embed embedded/skills
+var embeddedSkills embed.FS
 
 const (
 	BlockStartTag = "<!-- testdesk:start -->"
@@ -46,62 +52,38 @@ Read only the skill needed:
 
 <!-- testdesk:end -->`
 
-const SkillGuideContent = `---
-name: testdesk-guide
-description: Use TestDesk MCP to inspect capabilities, discover test IDs and choose a focused test workflow for a configured local project.
----
+var (
+	SkillGuideContent     = mustReadEmbeddedSkill("embedded/skills/testdesk-guide/SKILL.md")
+	SkillRunningContent   = mustReadEmbeddedSkill("embedded/skills/testdesk-running/SKILL.md")
+	SkillDebuggingContent = mustReadEmbeddedSkill("embedded/skills/testdesk-debugging/SKILL.md")
+	SkillProjectsContent  = mustReadEmbeddedSkill("embedded/skills/testdesk-projects/SKILL.md")
+)
 
-# TestDesk workflow
+func mustReadEmbeddedSkill(name string) string {
+	data, err := embeddedSkills.ReadFile(name)
+	if err != nil {
+		panic(fmt.Sprintf("read embedded skill %s: %v", name, err))
+	}
+	return strings.ReplaceAll(string(data), "\r\n", "\n")
+}
 
-Check ` + "`" + `testdesk_capabilities` + "`" + ` and a compact ` + "`" + `testdesk_snapshot` + "`" + ` before unfamiliar runs. Search ` + "`" + `testdesk_tests` + "`" + ` with a narrow query; retain returned IDs rather than inventing selectors. Include ` + "`" + `project` + "`" + ` when targeting a particular repository.
-
-Plan broad runs before execution. Queue a focused selection, wait for completion and inspect bounded diagnostics on failure. A plan's item count reflects execution units, which may be individual tests, files or a whole provider. It is not always a test count.
-
-TestDesk uses installed test runners and trusted local configuration. A provider template is not a guarantee of compatibility with every version or platform. Use ` + "`" + `testdesk_settings` + "`" + ` to inspect the actual commands. Do not install frameworks or edit project configuration merely to make a test green.`
-
-const SkillRunningContent = `---
-name: testdesk-running
-description: Plan, queue, wait for and control TestDesk test runs using explicit test IDs or narrow filters.
----
-
-# Run tests
-
-1. Inspect the selected project's state with ` + "`" + `testdesk_snapshot` + "`" + `.
-2. Find IDs with ` + "`" + `testdesk_tests` + "`" + `, scoped by ` + "`" + `project` + "`" + `, ` + "`" + `providerIds` + "`" + `, ` + "`" + `layers` + "`" + `, ` + "`" + `modules` + "`" + ` or ` + "`" + `query` + "`" + ` as needed.
-3. Use ` + "`" + `testdesk_plan` + "`" + ` before broad scopes. Inspect provider-wide items and overlap warnings.
-4. Call ` + "`" + `testdesk_run` + "`" + ` with IDs returned by discovery. Combined filters constrain every requested ID; contradictory selections are rejected.
-5. Call ` + "`" + `testdesk_wait` + "`" + ` with ` + "`" + `timeoutMs: 30000` + "`" + `, then check ` + "`" + `testdesk_run_status` + "`" + `. A wait timeout does not cancel execution.
-6. Request bounded diagnostics for a failing run and rerun the failed subset after fixing it.
-
-` + "`" + `testdesk_control` + "`" + ` accepts ` + "`" + `pause` + "`" + `, ` + "`" + `resume` + "`" + `, ` + "`" + `stop` + "`" + `, ` + "`" + `kill` + "`" + ` and ` + "`" + `skip` + "`" + `. Pause holds the queue; stop cancels current work and queued runs. Stop and kill currently share the manager cancellation path, so kill is not an independent escalation mechanism. Scope controls to the intended project and do not interrupt unrelated work.`
-
-const SkillDebuggingContent = `---
-name: testdesk-debugging
-description: Diagnose a failed TestDesk run using bounded logs, test identity, result evidence and a focused rerun after a fix.
----
-
-# Diagnose failures
-
-Find the failing run with ` + "`" + `testdesk_history` + "`" + ` using ` + "`" + `status: "failed"` + "`" + ` and a small ` + "`" + `limit` + "`" + `. Request ` + "`" + `testdesk_diagnostics` + "`" + ` with its ` + "`" + `runId` + "`" + `, the intended ` + "`" + `project` + "`" + ` and ` + "`" + `maxBytes: 4096` + "`" + `.
-
-Use ` + "`" + `testdesk_test_details` + "`" + ` with the catalog's ` + "`" + `testId` + "`" + ` when names are ambiguous. Use ` + "`" + `testdesk_artifacts` + "`" + ` for report references. Missing or malformed result evidence can make a run fail while the selected case remains unknown; do not turn unknown into a passing result.
-
-Identify the cause before editing. After a fix, call ` + "`" + `testdesk_rerun_failed` + "`" + ` with the same project and run ID. Wait for its result. Keep the checks focused, and redact logs and environment values before sharing them.`
-
-const SkillProjectsContent = `---
-name: testdesk-projects
-description: Register, select and configure TestDesk projects without changing another agent session's default or test work.
----
-
-# Multiple projects
-
-List projects with ` + "`" + `testdesk_projects` + "`" + `; use ` + "`" + `limit` + "`" + ` and ` + "`" + `offset` + "`" + ` for additional pages. Target a unique name or absolute root with the ` + "`" + `project` + "`" + ` argument on project-scoped tools. ` + "`" + `testdesk_project_activate` + "`" + ` changes this MCP session's default only.
-
-Use ` + "`" + `testdesk_project_add` + "`" + ` with an absolute ` + "`" + `projectRoot` + "`" + ` to register a trusted repository. It creates ` + "`" + `testdesk.json` + "`" + ` only if absent. Review detected commands before running them.
-
-For an idle project, ` + "`" + `testdesk_project_configure` + "`" + ` merges detected providers while preserving custom providers. Use ` + "`" + `replaceProviders` + "`" + ` only for an authorized full reset. Configuration is rejected while work is queued or running.
-
-Queues and history are separate for each project. Avoid duplicate providers for the same test scope; inspect overlap warnings in execution plans. ` + "`" + `testdesk_project_forget_missing` + "`" + ` removes one explicitly selected missing, unloaded root from the registry without deleting files.`
+// EmbeddedSkillFiles returns every canonical skill and reference file keyed by path relative to the skills root.
+func EmbeddedSkillFiles() (map[string]string, error) {
+	files := map[string]string{}
+	err := fs.WalkDir(embeddedSkills, "embedded/skills", func(path string, d fs.DirEntry, walkErr error) error {
+		if walkErr != nil || d.IsDir() {
+			return walkErr
+		}
+		data, err := embeddedSkills.ReadFile(path)
+		if err != nil {
+			return err
+		}
+		rel := strings.TrimPrefix(path, "embedded/skills/")
+		files[rel] = strings.ReplaceAll(string(data), "\r\n", "\n")
+		return nil
+	})
+	return files, err
+}
 
 const CursorRuleContent = `---
 description: TestDesk test runner and orchestration guidelines
@@ -152,24 +134,32 @@ func InstallSkills(projectRoot string) (SkillInstallResult, error) {
 		result.InstalledFiles = append(result.InstalledFiles, "CLAUDE.md")
 	}
 
-	// Install skills in each harness's discoverable location.
-	skills := []struct{ name, content string }{
-		{"testdesk-guide", SkillGuideContent}, {"testdesk-running", SkillRunningContent},
-		{"testdesk-debugging", SkillDebuggingContent}, {"testdesk-projects", SkillProjectsContent},
+	// Install skills and progressive references in each harness's discoverable location.
+	embeddedFiles, err := EmbeddedSkillFiles()
+	if err != nil {
+		return result, fmt.Errorf("load embedded skills: %w", err)
 	}
-	for _, sk := range skills {
-		for _, rel := range []string{filepath.Join(".agents", "skills", sk.name, "SKILL.md"), filepath.Join(".claude", "skills", sk.name, "SKILL.md")} {
-			if err := installSkillFile(root, rel, sk.content, &result); err != nil {
+	relPaths := make([]string, 0, len(embeddedFiles))
+	for rel := range embeddedFiles {
+		relPaths = append(relPaths, rel)
+	}
+	sort.Strings(relPaths)
+	for _, rel := range relPaths {
+		content := embeddedFiles[rel]
+		for _, base := range []string{filepath.Join(".agents", "skills"), filepath.Join(".claude", "skills")} {
+			if err := installSkillFile(root, filepath.Join(base, filepath.FromSlash(rel)), content, &result); err != nil {
+				return result, err
+			}
+		}
+		if strings.HasPrefix(rel, "testdesk-guide/") {
+			geminiRel := strings.TrimPrefix(rel, "testdesk-guide/")
+			if err := installSkillFile(root, filepath.Join(".gemini", "skills", "testdesk", filepath.FromSlash(geminiRel)), content, &result); err != nil {
 				return result, err
 			}
 		}
 	}
 
 	if err := installSkillFile(root, filepath.Join(".cursor", "rules", "testdesk.mdc"), CursorRuleContent, &result); err != nil {
-		return result, err
-	}
-
-	if err := installSkillFile(root, filepath.Join(".gemini", "skills", "testdesk", "SKILL.md"), SkillGuideContent, &result); err != nil {
 		return result, err
 	}
 	if err := updateInstructionFile(filepath.Join(root, "GEMINI.md"), &result); err != nil {

@@ -1,0 +1,30 @@
+{
+  "name": "TestDesk",
+  "pluginId": "testdesk",
+  "description": "Find, plan, run, and diagnose project tests across Go, .NET, Vitest, Jest, Cargo, Playwright, pytest, Maven, Gradle, and Cypress from any MCP host.",
+  "publisher": "TestDesk contributors",
+  "repository": "https://github.com/thecodingrasta/TestDesk",
+  "homepage": "https://github.com/thecodingrasta/TestDesk",
+  "license": "GPL-3.0",
+  "categories": ["Developer tools", "Testing", "Agents"],
+  "keywords": ["test runner", "MCP", "Agent Skills", "diagnostics", "multi-project"],
+  "supportedPlatforms": [
+    "Windows amd64",
+    "Linux amd64 (CI build and archive checks; manual GUI verification pending)",
+    "macOS arm64 (CI desktop smoke; manual real-device feedback requested)",
+    "macOS amd64 (CI desktop smoke; manual real-device feedback requested)"
+  ],
+  "privacy": "TestDesk runs locally over stdio JSON-RPC and communicates with the desktop owner on loopback. Provider commands execute configured local test tools with user permissions. No cloud relay, telemetry, or credential collection is built in.",
+  "suggestedPrompts": [
+    "Use TestDesk to inspect available providers and test status without running tests.",
+    "Discover and run tests matching this module, then wait for completion.",
+    "Inspect bounded diagnostics for the latest failing run and rerun failed tests after fixing."
+  ],
+  "visualAssets": ["docs/assets/testdesk-icon.png"],
+  "screenshots": [
+    "docs/assets/screenshots/manager-overview.png",
+    "docs/assets/screenshots/manager-recent-failure.png",
+    "docs/assets/screenshots/compact-running.png",
+    "docs/assets/screenshots/settings-agent-integrations.png"
+  ]
+}

@@ -38,7 +38,7 @@ test('widget marks failed or delayed status as unavailable and recovers on a fre
   const getElement = id => {
     if (!elements.has(id)) {
       const classes = new Set();
-      elements.set(id, { classList: { add: value => classes.add(value), remove: value => classes.delete(value), contains: value => classes.has(value) }, style: {}, textContent: '' });
+      elements.set(id, { classList: { add: value => classes.add(value), remove: value => classes.delete(value), contains: value => classes.has(value) }, style: {}, textContent: '', querySelector: () => null });
     }
     return elements.get(id);
   };
