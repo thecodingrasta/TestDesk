@@ -8,15 +8,15 @@
 <h3 align="center">One desktop app to find, run and debug the tests in all your projects. Your AI agent can drive it too.</h3>
 
 <p align="center">
-  <a href="https://github.com/thecodingrasta/testdesk/actions/workflows/ci.yml"><img alt="Native validation" src="https://github.com/thecodingrasta/testdesk/actions/workflows/ci.yml/badge.svg"></a>
-  <a href="https://github.com/thecodingrasta/testdesk/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://github.com/thecodingrasta/testdesk/actions/workflows/codeql.yml/badge.svg"></a>
-  <a href="https://github.com/thecodingrasta/testdesk/releases"><img alt="Release" src="https://img.shields.io/github/v/release/thecodingrasta/TestDesk?include_prereleases"></a>
-  <a href="https://github.com/thecodingrasta/testdesk/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/thecodingrasta/testdesk/total"></a>
+  <a href="https://github.com/thecodingrasta/TestDesk/actions/workflows/ci.yml"><img alt="Native validation" src="https://github.com/thecodingrasta/TestDesk/actions/workflows/ci.yml/badge.svg"></a>
+  <a href="https://github.com/thecodingrasta/TestDesk/actions/workflows/codeql.yml"><img alt="CodeQL" src="https://github.com/thecodingrasta/TestDesk/actions/workflows/codeql.yml/badge.svg"></a>
+  <a href="https://github.com/thecodingrasta/TestDesk/releases"><img alt="Release" src="https://img.shields.io/github/v/release/thecodingrasta/TestDesk?include_prereleases"></a>
+  <a href="https://github.com/thecodingrasta/TestDesk/releases"><img alt="Downloads" src="https://img.shields.io/github/downloads/thecodingrasta/TestDesk/total"></a>
   <a href="LICENSE"><img alt="Licence: GPL v3" src="https://img.shields.io/badge/licence-GPLv3-blue.svg"></a>
   <a href="#install"><img alt="Platforms: Windows, Linux, macOS" src="https://img.shields.io/badge/platforms-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey.svg"></a>
   <a href="go.mod"><img alt="Source: Go 1.27+" src="https://img.shields.io/badge/source-Go%201.27%2B-00ADD8.svg"></a>
   <a href="docs/MCP.md"><img alt="MCP: stdio" src="https://img.shields.io/badge/MCP-stdio-6750A4.svg"></a>
-  <a href="https://github.com/thecodingrasta/testdesk/commits/main"><img alt="Last commit" src="https://img.shields.io/github/last-commit/thecodingrasta/TestDesk"></a>
+  <a href="https://github.com/thecodingrasta/TestDesk/commits/main"><img alt="Last commit" src="https://img.shields.io/github/last-commit/thecodingrasta/TestDesk"></a>
   <a href="CONTRIBUTING.md"><img alt="PRs welcome" src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg"></a>
 </p>
 
@@ -24,9 +24,29 @@ TestDesk finds the tests in your projects, runs the ones you pick and shows you 
 
 It doesn't install test tools or runtimes for you. If `dotnet test` or `npm test` works in your project, TestDesk can run it.
 
+## Screenshots
+
+The manager shows every provider's tests and the live run. The compact controller stays on screen while tests run.
+
+![Manager window with a live Go test run](docs/assets/screenshots/manager-overview.png)
+
+![Recent runs with a failed test](docs/assets/screenshots/manager-recent-failure.png)
+
+| Compact controller | Two projects in one controller |
+| --- | --- |
+| <img src="docs/assets/screenshots/compact-running.png" width="480" alt="Compact controller while tests run"> | <img src="docs/assets/screenshots/compact-multi-project.png" width="480" alt="Compact controller with TestDesk and Workcopy active"> |
+
+![Projects page listing two connected workspaces](docs/assets/screenshots/projects.png)
+
+| Settings, General | Settings, Agent Integrations |
+| --- | --- |
+| <img src="docs/assets/screenshots/settings-general.png" width="640" alt="Compact controller and retention preferences"> | <img src="docs/assets/screenshots/settings-agent-integrations.png" width="640" alt="Detected agent workspaces and manual MCP setup"> |
+
+The images are generated from sample data. [How they are made](docs/SCREENSHOTS.md) explains how to regenerate them after a UI change.
+
 ## Install
 
-Grab the download for your system from the [latest release](https://github.com/thecodingrasta/testdesk/releases/latest). No building, no Go, no tooling.
+Grab the download for your system from the [latest release](https://github.com/thecodingrasta/TestDesk/releases/latest). No building, no Go, no tooling.
 
 | Your system | App (a single file) | Command-line tool (optional) |
 | --- | --- | --- |
@@ -124,7 +144,7 @@ The agent can discover tests, plan and run them, read bounded diagnostics and re
 
 Nobody on the project owns a Mac. Automated checks run on macOS (Intel and Apple silicon) for every change, but they can't tell us how the app feels to use.
 
-If you've got a Mac, installing a release and running it against a real project is one of the most useful things you can do. Tell us what worked and what didn't with the [compatibility report](https://github.com/thecodingrasta/testdesk/issues/new?template=compatibility_report.yml). Include your macOS version and chip. Bugs, screenshots and "it just worked" are all welcome.
+If you've got a Mac, installing a release and running it against a real project is one of the most useful things you can do. Tell us what worked and what didn't with the [compatibility report](https://github.com/thecodingrasta/TestDesk/issues/new?template=compatibility_report.yml). Include your macOS version and chip. Bugs, screenshots and "it just worked" are all welcome.
 
 ## Build from source
 

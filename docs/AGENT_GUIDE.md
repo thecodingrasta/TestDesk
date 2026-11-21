@@ -13,6 +13,8 @@ Use the desktop's **Settings** screen to install a detected MCP target or copy i
 }
 ```
 
+![Settings screen, Agent Integrations tab, listing detected agent workspaces with install and manual configuration actions](assets/screenshots/settings-agent-integrations.png)
+
 Client schemas differ. Use the [Codex example](../examples/codex-mcp-config.toml) for TOML clients and the target's generated manual snippet for other clients. TestDesk does not authenticate you to a model provider.
 
 ## Harness coverage

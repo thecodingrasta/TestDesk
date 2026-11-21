@@ -1,6 +1,6 @@
 # Install TestDesk
 
-Download a prebuilt file from the [releases page](https://github.com/thecodingrasta/testdesk/releases/latest). You don't need Go, Wails or any build tools. To build from source instead, jump to [Build from source](#build-from-source-advanced).
+Download a prebuilt file from the [releases page](https://github.com/thecodingrasta/TestDesk/releases/latest). You don't need Go, Wails or any build tools. To build from source instead, jump to [Build from source](#build-from-source-advanced).
 
 Each release has these downloads, and a `SHA256SUMS` file covering all of them:
 
@@ -61,7 +61,7 @@ testdesk
 
 Use the package that matches your chip. Apple menu, then **About This Mac** shows it. TestDesk uses the system WKWebView and shows a menu bar item.
 
-Automated checks start the macOS app and drive it over MCP on every change, but nobody has used it by hand on a Mac yet. If something looks or behaves wrong, please [report it](https://github.com/thecodingrasta/testdesk/issues/new?template=compatibility_report.yml).
+Automated checks start the macOS app and drive it over MCP on every change, but nobody has used it by hand on a Mac yet. If something looks or behaves wrong, please [report it](https://github.com/thecodingrasta/TestDesk/issues/new?template=compatibility_report.yml).
 
 For the command-line tool, run `chmod +x testdesk-cli-*-macos-*` and move it to a folder on your PATH, such as `/usr/local/bin/testdesk-cli`. If macOS blocks it, `xattr -d com.apple.quarantine <file>` removes the flag macOS adds to downloads. To use the CLI or MCP from the terminal, point `TESTDESK_DESKTOP_EXECUTABLE` at the executable inside the app bundle, in `Contents/MacOS`.
 

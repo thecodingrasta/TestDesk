@@ -40,6 +40,12 @@ let projectSwitchGeneration = 0;
 let activeProjects = [];
 const CATALOGUE_BATCH_SIZE = 160;
 
+// Formats a count with its noun, singular for exactly one: "1 provider", "3 providers".
+function count(value, noun) {
+  const n = Number(value) || 0;
+  return `${n} ${noun}${n === 1 ? '' : 's'}`;
+}
+
 function showToast(message) {
   const toast = $('toast');
   if (!toast) return;
@@ -301,7 +307,43 @@ function statusUnavailable() {
   return statusRefreshFailed || Date.now() - lastStatusUpdate > 6000;
 }
 
+// Compact heading parts that can give way, in the order they are dropped. Each class
+// collapses one part with a CSS transition; the part returns when there is room again.
+const COMPACT_DROP_ORDER = ['drop-clock', 'drop-state-text'];
+
+// Adds or removes the drop classes so the compact heading fits its width. Dropping is
+// monotonic per call: a part is restored only when it would still fit, which avoids
+// flicker when the window is resized.
+function fitCompactHeading() {
+  const player = $('player');
+  const heading = player?.querySelector('.widget-heading');
+  if (!player || !heading || player.classList.contains('hidden')) return;
+  const overflows = () => heading.scrollWidth > heading.clientWidth + 1;
+  let dropped = COMPACT_DROP_ORDER.filter(cls => player.classList.contains(cls)).length;
+  if (overflows()) {
+    while (dropped < COMPACT_DROP_ORDER.length && overflows()) {
+      player.classList.add(COMPACT_DROP_ORDER[dropped]);
+      dropped += 1;
+    }
+    return;
+  }
+  while (dropped > 0) {
+    const cls = COMPACT_DROP_ORDER[dropped - 1];
+    player.classList.remove(cls);
+    if (overflows()) {
+      player.classList.add(cls);
+      break;
+    }
+    dropped -= 1;
+  }
+}
+
 function renderPlayer() {
+  renderPlayerContent();
+  fitCompactHeading();
+}
+
+function renderPlayerContent() {
   widgetPaused = Boolean(snapshot?.paused);
   updateWidgetActionButton();
   const run = snapshot?.running;
@@ -466,7 +508,7 @@ function renderProjectList(projects) {
       <div>
         <strong>${escapeHtml(project.name || project.root)}</strong>
         <small>${escapeHtml(project.root)}${project.configured ? '' : '  /  missing config'}</small>
-        <small>${project.providerCount || 0} providers / ${project.testCount || 0} tests / opened ${escapeHtml(formatDate(project.lastOpened))}</small>
+        <small>${count(project.providerCount, 'provider')} / ${count(project.testCount, 'test')} / opened ${escapeHtml(formatDate(project.lastOpened))}</small>
       </div>
       <div class="project-actions">
         <button class="button" data-switch-project="${escapeAttr(project.root)}" ${project.configured ? '' : 'disabled'}>${project.active ? 'Active' : 'Switch'}</button>
@@ -1473,6 +1515,9 @@ function escapeAttr(value) {
 
 async function init() {
 	frontendLoadingOperations.add('startup');
+	if (window.ResizeObserver && $('player')) {
+		new ResizeObserver(() => fitCompactHeading()).observe($('player'));
+	}
 	if (window.runtime?.EventsOn) {
 		window.runtime.EventsOn('testdesk:loading', presentLoading);
 		window.runtime.EventsOn('testdesk:window-mode', (next) => {

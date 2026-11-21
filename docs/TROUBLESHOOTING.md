@@ -40,6 +40,12 @@ Restore the relevant `.testdesk-backup-*` configuration or skill file and restar
 
 Use **Reset widget position** in Settings. Management views use native window chrome, while the compact controller is frameless. Rebuild before diagnosing a version-specific window issue. Platform behavior needs native reproduction.
 
+## Find the output of a failed run
+
+Open **Recent Runs** in the manager to see each completed run and its status. Select a failed run to load its captured output, then use **Copy diagnostics** for the shareable record.
+
+![Recent Runs tab with a failed run selected, listing the run status and its captured output](assets/screenshots/manager-recent-failure.png)
+
 ## Collect useful diagnostics
 
 Include the version/commit, OS, architecture, runner version, selected project/provider and minimal reproduction. Request bounded MCP diagnostics or copy relevant output. Redact credentials, command arguments and personal paths. See [support](../SUPPORT.md).

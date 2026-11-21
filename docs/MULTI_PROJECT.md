@@ -2,6 +2,8 @@
 
 TestDesk stores a per-user list of recent projects under the OS configuration directory. Each project retains independent `.testdesk` catalogs, run history, diagnostics and artifacts.
 
+![Projects screen listing the TestDesk and Workcopy workspaces, each with its paths, provider and test counts, and actions](assets/screenshots/projects.png)
+
 Use the active-project dropdown for a fast switch. The **Projects** screen supports:
 
 - see provider/test counts and the last-opened time;
@@ -9,5 +11,7 @@ Use the active-project dropdown for a fast switch. The **Projects** screen suppo
 - add a new project folder and create/detect configuration;
 - refresh discovery;
 - forget a project without deleting project files.
+
+<img src="assets/screenshots/compact-multi-project.png" width="480" alt="Compact controller with the project dropdown showing TestDesk and Workcopy, both active">
 
 The MCP server also provides `testdesk_projects`, `testdesk_project_add` and `testdesk_project_activate`. Project activation changes the MCP session default only; it does not alter, cancel or delete other projects. All project-scoped MCP calls accept an optional `project` name or absolute root, so agents may target multiple projects concurrently without switching the default session context.

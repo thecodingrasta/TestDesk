@@ -183,3 +183,10 @@ body.sheet-open{overflow:hidden}
 @media(prefers-reduced-motion:reduce){
   .add-project-sheet{animation:none}
 }
+
+/* Compact heading parts that give way when the widget is too narrow (see fitCompactHeading in app.js). */
+.run-clock,.widget-state-text{max-width:96px;overflow:hidden;white-space:nowrap;transition:max-width .22s ease,opacity .18s ease,padding .22s ease,margin .22s ease,border-width .22s ease}
+.player.drop-clock .run-clock{max-width:0;opacity:0;padding-left:0;padding-right:0;margin-left:-5px;border-width:0}
+.player.drop-state-text .widget-state-text{max-width:0;opacity:0}
+.player.drop-state-text .widget-state{gap:0}
+@media (prefers-reduced-motion:reduce){.run-clock,.widget-state-text{transition:none}}

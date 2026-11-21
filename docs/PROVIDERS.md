@@ -33,7 +33,7 @@ If you use a tool the table marks as untested, or a version it doesn't list, tel
 1. Add your project in TestDesk (**Projects**, or `testdesk_project_add` over MCP).
 2. Review the detected providers in `testdesk.json`.
 3. Discover and run tests from the UI or through your agent.
-4. Open a [compatibility report](https://github.com/thecodingrasta/testdesk/issues/new?template=compatibility_report.yml), or send a pull request. See [CONTRIBUTING.md](../CONTRIBUTING.md).
+4. Open a [compatibility report](https://github.com/thecodingrasta/TestDesk/issues/new?template=compatibility_report.yml), or send a pull request. See [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ---
 ## Provider Configuration Schema

@@ -4,6 +4,10 @@ Each project has a `testdesk.json` file at its root. TestDesk creates it during 
 
 When the project already has a `.gitignore`, setup appends one idempotent entry for the configured workspace (normally `.testdesk/`) plus a TestDesk attribution link. TestDesk does not create a `.gitignore` and does not add an ignore entry for an absolute workspace path.
 
+The compact controller and window behaviour are set on the **Settings** screen, General tab. The values there are written back to `testdesk.json` and the global preferences.
+
+![Settings screen, General tab, showing compact controller size, mode, pinning and log retention](assets/screenshots/settings-general.png)
+
 Important fields:
 
 - `name`: display name used in project switching.

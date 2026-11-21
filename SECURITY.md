@@ -2,7 +2,7 @@
 
 ## Reporting
 
-Report suspected vulnerabilities through [GitHub private vulnerability reporting](https://github.com/thecodingrasta/testdesk/security/advisories/new). If the private reporting form is unavailable, open an issue asking for a private contact without disclosing the vulnerability. Include the affected commit or version, impact and reproduction steps. Redact credentials and personal data.
+Report suspected vulnerabilities through [GitHub private vulnerability reporting](https://github.com/thecodingrasta/TestDesk/security/advisories/new). If the private reporting form is unavailable, open an issue asking for a private contact without disclosing the vulnerability. Include the affected commit or version, impact and reproduction steps. Redact credentials and personal data.
 
 Maintainers assess reports as availability permits. There is no guaranteed response time or support SLA. Security fixes target the current release and main branch; older builds may require an upgrade.
 

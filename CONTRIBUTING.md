@@ -4,9 +4,9 @@ Thanks for helping. Bug reports, fixes, new test-tool support, doc corrections a
 
 ## Easiest ways to help
 
-- **Try TestDesk on a Mac.** Nobody on the project owns one. Install a [release](https://github.com/thecodingrasta/testdesk/releases), run it on a real project and file a [compatibility report](https://github.com/thecodingrasta/testdesk/issues/new?template=compatibility_report.yml) with your macOS version and chip. Working and broken are both useful.
+- **Try TestDesk on a Mac.** Nobody on the project owns one. Install a [release](https://github.com/thecodingrasta/TestDesk/releases), run it on a real project and file a [compatibility report](https://github.com/thecodingrasta/TestDesk/issues/new?template=compatibility_report.yml) with your macOS version and chip. Working and broken are both useful.
 - **Try a test tool we haven't tested.** The [provider table](docs/PROVIDERS.md) lists which ones. Tell us how discovery, running a single test and diagnostics behaved.
-- **Report a bug** with the [issue form](https://github.com/thecodingrasta/testdesk/issues/new/choose). Include your TestDesk version, OS and chip, and the smallest project that reproduces it.
+- **Report a bug** with the [issue form](https://github.com/thecodingrasta/TestDesk/issues/new/choose). Include your TestDesk version, OS and chip, and the smallest project that reproduces it.
 - **Fix the docs** when something is wrong, missing or unclear.
 
 For vulnerabilities, use [SECURITY.md](SECURITY.md) instead of a public issue. Everyone taking part follows the [code of conduct](CODE_OF_CONDUCT.md).
