@@ -17,7 +17,7 @@ import (
 	"github.com/thecodingrasta/testdesk/internal/manager"
 )
 
-const serverVersion = "1.0.0"
+const serverVersion = "1.21a"
 
 type Server struct {
 	mu             sync.RWMutex

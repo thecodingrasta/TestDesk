@@ -8,6 +8,10 @@
   "frontend:dev:watcher": "",
   "frontend:dev:serverUrl": "auto",
   "build:tags": "",
+  "info": {
+    "productName": "TestDesk",
+    "productVersion": "1.21.1"
+  },
   "author": {
     "name": "TestDesk contributors",
     "email": ""

@@ -58,8 +58,10 @@ jobs:
       - name: Validate source, documentation and agent assets
         shell: bash
         run: bash scripts/validate.sh
-      - name: Race detector (macOS)
-        if: runner.os == 'macOS'
+      # The race detector needs cgo and a C compiler. Linux and macOS runners provide both; the
+      # Windows runner's compiler is not verified here, so Windows race coverage stays a documented gap.
+      - name: Race detector (macOS and Linux)
+        if: runner.os != 'Windows'
         env:
           CGO_ENABLED: '1'
           TESTDESK_CONFIG_HOME: ${{ runner.temp }}/testdesk-race-config

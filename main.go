@@ -13,7 +13,7 @@ import (
 	"github.com/thecodingrasta/testdesk/internal/mcpbridge"
 )
 
-const desktopVersion = "1.0.0"
+const desktopVersion = "1.21a"
 
 func main() {
 	if len(os.Args) > 1 {

@@ -194,7 +194,7 @@ func validateDistributionAt(repositoryRoot, configPath string) error {
 	distributionRoot := def.root
 	pluginRoot := filepath.Join(distributionRoot, filepath.FromSlash(def.PluginRoot))
 	skillsRoot := filepath.Join(distributionRoot, filepath.FromSlash(def.SkillsRoot))
-	if err = validatePluginManifest(filepath.Join(pluginRoot, "plugin.json"), def.DefaultVersion, def.License); err != nil {
+	if err = validatePluginManifest(filepath.Join(pluginRoot, "plugin.json"), def.ManifestVersion, def.License); err != nil {
 		return err
 	}
 	if err = validatePortableMCP(filepath.Join(pluginRoot, "mcp.json")); err != nil {
@@ -204,6 +204,9 @@ func validateDistributionAt(repositoryRoot, configPath string) error {
 		if _, err = regularFile(filepath.Join(repositoryRoot, license)); err != nil {
 			return fmt.Errorf("required package license %s: %w", license, err)
 		}
+	}
+	if err = validateWailsProductVersion(repositoryRoot, def.DefaultVersion); err != nil {
+		return err
 	}
 	metadataPath := filepath.Join(distributionRoot, "marketplace-metadata.json")
 	if err = validateMarketplaceMetadata(repositoryRoot, metadataPath, filepath.Join(pluginRoot, "plugin.json")); err != nil {
@@ -285,6 +288,30 @@ func validateDistributionAt(repositoryRoot, configPath string) error {
 	return nil
 }
 
+// validateWailsProductVersion keeps the bundle's Info.plist and Windows version resources on the release number.
+func validateWailsProductVersion(repositoryRoot, release string) error {
+	want, err := bundleVersion(release)
+	if err != nil {
+		return err
+	}
+	body, err := regularFile(filepath.Join(repositoryRoot, "wails.json"))
+	if err != nil {
+		return fmt.Errorf("wails.json: %w", err)
+	}
+	var cfg struct {
+		Info struct {
+			ProductVersion string `json:"productVersion"`
+		} `json:"info"`
+	}
+	if err = json.Unmarshal(body, &cfg); err != nil {
+		return fmt.Errorf("parse wails.json: %w", err)
+	}
+	if cfg.Info.ProductVersion != want {
+		return fmt.Errorf("wails.json info.productVersion is %q; release %s needs %q", cfg.Info.ProductVersion, release, want)
+	}
+	return nil
+}
+
 func validateMarketplaceMetadata(repositoryRoot, filename, manifestFilename string) error {
 	body, err := regularFile(filename)
 	if err != nil {
@@ -346,7 +373,7 @@ func validateGitHubMarketplace(repositoryRoot string, def definition) error {
 	if err != nil {
 		return err
 	}
-	return validateMarketplaceListing(filename, marketplace, manifest.Name, def.DefaultVersion, filepath.ToSlash(pluginPath))
+	return validateMarketplaceListing(filename, marketplace, manifest.Name, def.ManifestVersion, filepath.ToSlash(pluginPath))
 }
 
 func validateNativeRepositoryMarketplace(repositoryRoot string, def definition, marketplacePath, targetID, manifestPath, manifestKind string) error {
@@ -374,7 +401,7 @@ func validateNativeRepositoryMarketplace(repositoryRoot string, def definition, 
 	if err != nil {
 		return fmt.Errorf("adapter manifest: %w", err)
 	}
-	if err = validateNativePluginManifest(map[string][]byte{manifestPath: manifestBody}, manifestPath, manifestKind, def.DefaultVersion, def.License); err != nil {
+	if err = validateNativePluginManifest(map[string][]byte{manifestPath: manifestBody}, manifestPath, manifestKind, def.ManifestVersion, def.License); err != nil {
 		return err
 	}
 	var manifest repositoryPluginManifest
@@ -397,7 +424,7 @@ func validateNativeRepositoryMarketplace(repositoryRoot string, def definition, 
 	if !skillNamePattern.MatchString(marketplace.Name) || strings.TrimSpace(marketplace.Owner.Name) == "" || len(marketplace.Plugins) == 0 {
 		return fmt.Errorf("marketplace must declare a stable name, owner, and plugin list")
 	}
-	return validateMarketplaceListing(filename, marketplace, manifest.Name, def.DefaultVersion, filepath.ToSlash(pluginPath))
+	return validateMarketplaceListing(filename, marketplace, manifest.Name, def.ManifestVersion, filepath.ToSlash(pluginPath))
 }
 
 func validateMarketplaceListing(filename string, marketplace githubMarketplaceManifest, expectedName, expectedVersion, expectedSource string) error {
@@ -658,7 +685,7 @@ func validateRenderedTarget(repositoryRoot, distributionRoot string, def definit
 		if err = decodeStrict(body, &manifest); err != nil {
 			return fmt.Errorf("portable manifest: %w", err)
 		}
-		if manifest.Schema != agentPluginManifestSchema || manifest.Version != def.DefaultVersion {
+		if manifest.Schema != agentPluginManifestSchema || manifest.Version != def.ManifestVersion {
 			return fmt.Errorf("portable manifest schema or version mismatch")
 		}
 	}
@@ -672,21 +699,21 @@ func validateRenderedTarget(repositoryRoot, distributionRoot string, def definit
 	}
 	switch item.ID {
 	case "claude-code":
-		if err = validateNativePluginManifest(files, ".claude-plugin/plugin.json", "claude", def.DefaultVersion, def.License); err != nil {
+		if err = validateNativePluginManifest(files, ".claude-plugin/plugin.json", "claude", def.ManifestVersion, def.License); err != nil {
 			return err
 		}
 		if err = validateNativeMCPConfig(files, ".mcp.json"); err != nil {
 			return err
 		}
 	case "antigravity":
-		if err = validateAntigravityManifest(files, def.DefaultVersion, def.License); err != nil {
+		if err = validateAntigravityManifest(files, def.ManifestVersion, def.License); err != nil {
 			return err
 		}
 		if err = validateNativeMCPConfig(files, "mcp_config.json"); err != nil {
 			return err
 		}
 	case "cursor":
-		if err = validateNativePluginManifest(files, ".cursor-plugin/plugin.json", "cursor", def.DefaultVersion, def.License); err != nil {
+		if err = validateNativePluginManifest(files, ".cursor-plugin/plugin.json", "cursor", def.ManifestVersion, def.License); err != nil {
 			return err
 		}
 		if err = validateNativeMCPConfig(files, "mcp.json"); err != nil {

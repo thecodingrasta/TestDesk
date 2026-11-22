@@ -32,6 +32,8 @@ build/windows/*
 
 # IDE and operating system files
 .vscode/
+# The Copilot adapter ships a workspace MCP file that must be publishable.
+!agent-distribution/testdesk/adapters/vscode-copilot/.vscode/
 .idea/
 .DS_Store
 Thumbs.db

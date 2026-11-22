@@ -12,6 +12,9 @@ import tempfile
 import zipfile
 from xml.parsers.expat import ExpatError
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import release_contract  # noqa: E402
+
 
 def digest(path):
     with path.open('rb') as stream:
@@ -37,6 +40,15 @@ def read_bundle_plist(path):
         return plistlib.loads(raw)
     except (plistlib.InvalidFileException, ExpatError) as error:
         raise SystemExit(f'{path} is not a valid property list: {error}') from error
+
+
+def check_bundle_version(app, version):
+    """Require the bundle's version keys to carry the numeric form of the release, as Wails writes them."""
+    bundle = read_bundle_plist(app / 'Contents/Info.plist')
+    expected = release_contract.bundle_version(version)
+    for key in ('CFBundleShortVersionString', 'CFBundleVersion'):
+        if bundle.get(key) != expected:
+            raise SystemExit(f'{app.name} Info.plist {key} is {bundle.get(key)!r}; release {version} needs {expected!r}')
 
 
 def bundle_executable(app):
@@ -115,6 +127,7 @@ def main():
             if len(apps) != 1:
                 raise SystemExit('expected one macOS app bundle')
             executable = bundle_executable(apps[0])
+            check_bundle_version(apps[0], version)
             arch = subprocess.check_output(['lipo', '-archs', str(executable)], text=True).strip()
             if platform.machine() not in arch.split():
                 raise SystemExit(f'package does not contain native architecture {platform.machine()}')
@@ -145,8 +158,13 @@ def main():
                 raise SystemExit('standalone desktop version mismatch')
             executable = standalone
         if args.desktop_smoke:
+            pair = Path(__file__).with_name('cli_pair_smoke.py')
             if bare_desktop:
-                subprocess.run([sys.executable, str(Path(__file__).with_name('cli_pair_smoke.py')), str(alone)], check=True)
+                subprocess.run([sys.executable, str(pair), str(alone)], check=True)
+            elif sys.platform == 'darwin':
+                # The macOS package has no bare desktop. Its CLI must find the desktop inside TestDesk.app
+                # beside it, so the pairing check runs from the extracted package itself.
+                subprocess.run([sys.executable, str(pair), str(root)], check=True)
             subprocess.run([sys.executable, str(Path(__file__).with_name('desktop_smoke.py')), str(executable)], check=True)
         print(f'Extracted package and standalone download checks passed: {archive.name}')
 

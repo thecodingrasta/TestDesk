@@ -1,0 +1,9 @@
+{
+  "servers": {
+    "testdesk": {
+      "type": "stdio",
+      "command": "testdesk",
+      "args": ["mcp"]
+    }
+  }
+}

@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strings"
 	"time"
 
@@ -250,18 +251,36 @@ func DesktopExecutableForCLI() string {
 
 // desktopBeside returns the desktop executable that sits in the same directory as the CLI at
 // path self. Windows packages name it TestDesk.exe (which also matches a renamed testdesk.exe on
-// that case-insensitive filesystem) and Linux packages name it testdesk, so both spellings are tried.
+// that case-insensitive filesystem), Linux packages name it testdesk, and the macOS package keeps
+// it inside its app bundle.
 func desktopBeside(self string) string {
-	names := []string{"TestDesk", "testdesk"}
-	if runtime.GOOS == "windows" {
-		names = []string{"TestDesk.exe"}
-	}
+	return desktopBesideFor(runtime.GOOS, self)
+}
+
+// desktopBesideFor applies the platform's package layout for goos, so every layout is testable on any host.
+func desktopBesideFor(goos, self string) string {
 	selfInfo, err := os.Stat(self)
 	if err != nil {
 		return ""
 	}
-	for _, name := range names {
-		candidate := filepath.Join(filepath.Dir(self), name)
+	dir := filepath.Dir(self)
+	var candidates []string
+	switch goos {
+	case "windows":
+		candidates = []string{filepath.Join(dir, "TestDesk.exe")}
+	case "darwin":
+		// The bundle's name follows the product name, so match any app bundle beside the CLI.
+		bundles, _ := filepath.Glob(filepath.Join(dir, "*.app"))
+		sort.Strings(bundles)
+		for _, bundle := range bundles {
+			candidates = append(candidates,
+				filepath.Join(bundle, "Contents", "MacOS", "testdesk"),
+				filepath.Join(bundle, "Contents", "MacOS", "TestDesk"))
+		}
+	default:
+		candidates = []string{filepath.Join(dir, "TestDesk"), filepath.Join(dir, "testdesk")}
+	}
+	for _, candidate := range candidates {
 		info, err := os.Stat(candidate)
 		if err == nil && !info.IsDir() && !os.SameFile(selfInfo, info) {
 			return candidate

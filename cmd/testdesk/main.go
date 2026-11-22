@@ -22,7 +22,7 @@ import (
 	"github.com/thecodingrasta/testdesk/internal/mcpbridge"
 )
 
-const version = "1.0.0"
+const version = "1.21a"
 
 func main() {
 	if err := run(os.Args[1:]); err != nil {

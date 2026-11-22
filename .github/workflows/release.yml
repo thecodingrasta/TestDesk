@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Existing reviewed version tag that matches VERSION, such as v1.0.0 or v1.0.0-rc.1
+        description: Existing reviewed version tag that matches VERSION, such as v1.0.0, v1.0.0-rc.1 or v1.21a
         required: true
         type: string
 
@@ -27,12 +27,10 @@ jobs:
       - name: Require the reviewed tag to identify this exact source
         env:
           VERSION_TAG: ${{ inputs.version }}
+          BUILD_COMMIT: ${{ github.sha }}
         shell: bash
-        run: |
-          set -euo pipefail
-          [[ "$VERSION_TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]
-          test "$(git rev-parse --verify --end-of-options "refs/tags/$VERSION_TAG^{commit}")" = "$GITHUB_SHA"
-          test "$VERSION_TAG" = "v$(tr -d '\r\n' < VERSION)"
+        # scripts/release_contract.py holds the tag grammar, the VERSION match and the exact-commit check.
+        run: python3 scripts/release_contract.py verify --tag "$VERSION_TAG" --commit "$BUILD_COMMIT"
 
   validate:
     needs: verify
@@ -165,6 +163,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          flags=(--verify-tag --draft --generate-notes)
-          if [[ "$VERSION_TAG" == *-* ]]; then flags+=(--prerelease); fi
+          draft_flags=$(python3 scripts/release_contract.py draft-flags --tag "$VERSION_TAG")
+          readarray -t flags <<< "$draft_flags"
+          # Without --draft, gh publishes the release at once. Refuse to run if the flags ever lose it.
+          [[ " ${flags[*]} " == *" --draft "* ]] || { echo 'Refusing to create a release that is not a draft.' >&2; exit 1; }
           gh release create "$VERSION_TAG" dist/* "${flags[@]}"

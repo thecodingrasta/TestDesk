@@ -13,12 +13,11 @@ import (
 const defaultDefinitionPath = "agent-distribution/testdesk/agentdist.json"
 
 var (
-	distributionVersionPattern = regexp.MustCompile(`^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z]+([.-][0-9A-Za-z]+)*)?$`)
-	targetIDPattern            = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
-	mcpToolPrefixPattern       = regexp.MustCompile(`^[a-z][a-z0-9_]*_$`)
-	mcpToolSuffixPattern       = regexp.MustCompile(`^[a-z][a-z0-9_]*$`)
-	cliNamePattern             = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]*$`)
-	cliHelpConstantPattern     = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
+	targetIDPattern        = regexp.MustCompile(`^[a-z0-9]+(-[a-z0-9]+)*$`)
+	mcpToolPrefixPattern   = regexp.MustCompile(`^[a-z][a-z0-9_]*_$`)
+	mcpToolSuffixPattern   = regexp.MustCompile(`^[a-z][a-z0-9_]*$`)
+	cliNamePattern         = regexp.MustCompile(`^[a-z0-9][a-z0-9._-]*$`)
+	cliHelpConstantPattern = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
 )
 
 type target struct {
@@ -31,8 +30,10 @@ type target struct {
 }
 
 type definition struct {
-	SchemaVersion         int      `json:"schemaVersion"`
-	DefaultVersion        string   `json:"defaultVersion"`
+	SchemaVersion  int    `json:"schemaVersion"`
+	DefaultVersion string `json:"defaultVersion"`
+	// ManifestVersion is derived from DefaultVersion for plugin manifests; it is never read from JSON.
+	ManifestVersion       string   `json:"-"`
 	License               string   `json:"license"`
 	PluginRoot            string   `json:"pluginRoot"`
 	SkillsRoot            string   `json:"skillsRoot"`
@@ -74,6 +75,9 @@ func loadDefinitionAt(repositoryRoot, configPath string) (definition, error) {
 	}
 	if !validDistributionVersion(result.DefaultVersion) {
 		return result, fmt.Errorf("invalid defaultVersion %q", result.DefaultVersion)
+	}
+	if result.ManifestVersion, err = manifestVersion(result.DefaultVersion); err != nil {
+		return result, err
 	}
 	if strings.TrimSpace(result.License) == "" || result.License != strings.TrimSpace(result.License) {
 		return result, fmt.Errorf("distribution license must be declared without surrounding whitespace")
@@ -169,10 +173,6 @@ func decodeStrict(data []byte, target any) error {
 		return err
 	}
 	return nil
-}
-
-func validDistributionVersion(value string) bool {
-	return len(value) <= 64 && distributionVersionPattern.MatchString(value)
 }
 
 func mcpToolReferencePatternFor(prefix string) *regexp.Regexp {

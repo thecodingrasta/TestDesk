@@ -75,7 +75,7 @@ class CheckPackageThroughSymlinkedTemp(unittest.TestCase):
 
 
 # Info.plist exactly as Wails v2.17.0 renders its embedded template for this project (name TestDesk,
-# output file testdesk, default product fields). It starts at <!DOCTYPE with no <?xml?> declaration.
+# output file testdesk, productVersion 1.21.1 from wails.json for release 1.21a). It starts at <!DOCTYPE with no <?xml?> declaration.
 WAILS_INFO_PLIST = '''<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
     <dict>
@@ -88,11 +88,11 @@ WAILS_INFO_PLIST = '''<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http
         <key>CFBundleIdentifier</key>
         <string>com.wails.testdesk</string>
         <key>CFBundleVersion</key>
-        <string>1.0.0</string>
+        <string>1.21.1</string>
         <key>CFBundleGetInfoString</key>
         <string>Built using Wails (https://wails.io)</string>
         <key>CFBundleShortVersionString</key>
-        <string>1.0.0</string>
+        <string>1.21.1</string>
         <key>CFBundleIconFile</key>
         <string>iconfile</string>
         <key>LSMinimumSystemVersion</key>
@@ -155,3 +155,11 @@ class MacBundleInspection(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+    def test_bundle_version_must_be_the_numeric_release_form(self):
+        self.write_plist(WAILS_INFO_PLIST)
+        check_package.check_bundle_version(self.app, '1.21a')
+        self.write_plist(WAILS_INFO_PLIST.replace('1.21.1', '1.0.0'))
+        with self.assertRaises(SystemExit) as failure:
+            check_package.check_bundle_version(self.app, '1.21a')
+        self.assertIn('needs', str(failure.exception))

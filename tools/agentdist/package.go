@@ -15,6 +15,10 @@ import (
 )
 
 func targetPackageFiles(repositoryRoot, distributionRoot string, definition definition, item target, version string) (map[string][]byte, error) {
+	manifest, err := manifestVersion(version)
+	if err != nil {
+		return nil, err
+	}
 	templateRoot := filepath.Join(distributionRoot, filepath.FromSlash(item.Source))
 	files := map[string][]byte{}
 	if err := collectPackageFiles(templateRoot, templateRoot, files); err != nil {
@@ -56,7 +60,7 @@ func targetPackageFiles(repositoryRoot, distributionRoot string, definition defi
 	}
 	for name, body := range files {
 		if filepath.Base(name) == "plugin.json" {
-			rendered, renderErr := replaceManifestVersion(body, version, definition.DefaultVersion)
+			rendered, renderErr := replaceManifestVersion(body, manifest)
 			if renderErr != nil {
 				return nil, fmt.Errorf("render %s: %w", name, renderErr)
 			}
@@ -106,7 +110,7 @@ func collectPackageFiles(root, current string, files map[string][]byte) error {
 	})
 }
 
-func replaceManifestVersion(body []byte, version, defaultVersion string) (string, error) {
+func replaceManifestVersion(body []byte, version string) (string, error) {
 	var manifest map[string]json.RawMessage
 	if err := json.Unmarshal(body, &manifest); err != nil {
 		return "", err
@@ -119,7 +123,7 @@ func replaceManifestVersion(body []byte, version, defaultVersion string) (string
 	if err := json.Unmarshal(rawVersion, &current); err != nil {
 		return "", fmt.Errorf("version must be a JSON string")
 	}
-	if current != defaultVersion && current != "{{VERSION}}" && !validDistributionVersion(current) {
+	if current != "{{VERSION}}" && !semverReleasePattern.MatchString(current) {
 		return "", fmt.Errorf("unexpected manifest version %q", current)
 	}
 	manifest["version"], _ = json.Marshal(version)

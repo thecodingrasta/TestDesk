@@ -18,7 +18,16 @@ node --check internal/desktop/assets/app.js
 node --test internal/desktop/testdata/*.test.cjs
 go run ./scripts/sync-agent-assets -check
 go run ./tools/agentdist validate --release-version "$(tr -d '\r\n' < VERSION)"
-python3 scripts/check_repository.py
-python3 scripts/check_version.py
-python3 -m unittest discover -s scripts -p 'test_*.py'
+python_bin=""
+# Windows ships a python3 App Execution Alias that exits non-zero, so run each candidate before choosing it.
+for candidate in python3 python; do
+  if "$candidate" -c 'import sys; raise SystemExit(sys.version_info < (3, 9))' >/dev/null 2>&1; then
+    python_bin=$candidate
+    break
+  fi
+done
+[[ -n "$python_bin" ]] || { echo 'Python 3.9 or later is required.' >&2; exit 1; }
+"$python_bin" scripts/check_repository.py
+"$python_bin" scripts/check_version.py
+"$python_bin" -m unittest discover -s scripts -p 'test_*.py'
 if [[ "${1:-}" == --build ]]; then bash scripts/build.sh; fi

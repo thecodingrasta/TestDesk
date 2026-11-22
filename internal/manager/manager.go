@@ -1698,8 +1698,31 @@ func filterProviders(providers []domain.Provider, allowed map[string]struct{}) [
 	return filtered
 }
 
+// runIDSource issues run identifiers that are unique and increasing within this process. Wall-clock
+// resolution can repeat (Windows is coarse), and two runs queued in the same tick would otherwise
+// share a run directory and the second would fail with "already exists".
+type runIDSource struct {
+	mu   sync.Mutex
+	last time.Time
+	now  func() time.Time
+}
+
+var runIDs = &runIDSource{now: time.Now}
+
+func (s *runIDSource) next() string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	current := s.now().UTC()
+	if !current.After(s.last) {
+		current = s.last.Add(time.Nanosecond)
+	}
+	s.last = current
+	// A fixed-width layout makes lexical order match chronological order.
+	return current.Format("20060102T150405.000000000")
+}
+
 func newRunID() string {
-	return time.Now().UTC().Format("20060102T150405.000000000")
+	return runIDs.next()
 }
 
 func (m *Manager) WaitForIdle(ctx context.Context) error {
