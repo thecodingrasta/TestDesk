@@ -104,6 +104,17 @@ func TestDesktopBesideFindsTheMacOSBundleExecutable(t *testing.T) {
 	}
 }
 
+// The macOS layout is also checked as a plain binary, the name the test above uses on macOS hosts.
+func TestDesktopBesideAcceptsAPlainBinaryOnMacOS(t *testing.T) {
+	dir := t.TempDir()
+	cli := filepath.Join(dir, "testdesk-cli")
+	touch(t, cli)
+	touch(t, filepath.Join(dir, "testdesk"))
+	if got := desktopBesideFor("darwin", cli); !strings.EqualFold(filepath.Base(got), "testdesk") {
+		t.Fatalf("expected a plain testdesk beside the CLI on macOS, got %q", got)
+	}
+}
+
 func TestDesktopBesideLayoutsPerPlatform(t *testing.T) {
 	dir := t.TempDir()
 	cli := filepath.Join(dir, "testdesk-cli.exe")

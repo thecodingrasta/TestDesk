@@ -2,16 +2,17 @@
 
 This file records user-visible changes and release-process changes. Release steps are in [docs/RELEASING.md](docs/RELEASING.md).
 
-## 1.21a
+## 1.21b
 
-Not yet tagged. The maintainer creates the `v1.21a` tag after review.
+Not yet tagged. The maintainer creates the `v1.21b` tag after review.
 
-- The release version is `1.21a`, the exact tag text. The desktop app, CLI and MCP server report it.
-- The tag `v1.21a` is version 1.21.1 in plugin manifests, the macOS bundle and the Windows version resources. A single letter is a patch number (`a` is 1). The mapping is documented in [docs/RELEASING.md](docs/RELEASING.md).
+- The release version is `1.21b`, the exact tag text. The desktop app, CLI and MCP server report it.
+- The tag `v1.21b` is version 1.21.2 in plugin manifests, the macOS bundle and the Windows version resources. A single letter is a patch number (`b` is 2). The mapping is documented in [docs/RELEASING.md](docs/RELEASING.md).
 - The Go toolchain is 1.27.4, which fixes GO-2026-6859 (an HTTP/1 server crash in `net/http`) reported by `govulncheck`.
 - The VS Code and GitHub Copilot package includes `.vscode/mcp.json`.
 - The draft release workflow verifies the tag, creates only drafts, and marks hyphenated prerelease tags such as `v1.0.0-rc.1` as prereleases.
 - `scripts/validate.sh` finds a working Python on Windows and runs every gate, including the documentation and version checks.
+- The native package build checks the Wails CLI version without a broken pipe, so a CLI that keeps printing cannot fail the check.
 
 ## Earlier commits
 

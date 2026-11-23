@@ -269,7 +269,8 @@ func desktopBesideFor(goos, self string) string {
 	case "windows":
 		candidates = []string{filepath.Join(dir, "TestDesk.exe")}
 	case "darwin":
-		// The bundle's name follows the product name, so match any app bundle beside the CLI.
+		// The package keeps the desktop inside an app bundle whose name follows the product name, so
+		// match any bundle beside the CLI first. A plain binary beside the CLI is still accepted below.
 		bundles, _ := filepath.Glob(filepath.Join(dir, "*.app"))
 		sort.Strings(bundles)
 		for _, bundle := range bundles {
@@ -277,6 +278,7 @@ func desktopBesideFor(goos, self string) string {
 				filepath.Join(bundle, "Contents", "MacOS", "testdesk"),
 				filepath.Join(bundle, "Contents", "MacOS", "TestDesk"))
 		}
+		candidates = append(candidates, filepath.Join(dir, "TestDesk"), filepath.Join(dir, "testdesk"))
 	default:
 		candidates = []string{filepath.Join(dir, "TestDesk"), filepath.Join(dir, "testdesk")}
 	}

@@ -98,12 +98,12 @@ func TestWailsProductVersionMustMatchRelease(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	write(`{"info": {"productVersion": "1.21.1"}}`)
-	if err := validateWailsProductVersion(dir, "1.21a"); err != nil {
+	write(`{"info": {"productVersion": "1.21.2"}}`)
+	if err := validateWailsProductVersion(dir, "1.21b"); err != nil {
 		t.Fatalf("matching product version rejected: %v", err)
 	}
 	write(`{"info": {"productVersion": "1.0.0"}}`)
-	if err := validateWailsProductVersion(dir, "1.21a"); err == nil {
+	if err := validateWailsProductVersion(dir, "1.21b"); err == nil {
 		t.Fatal("stale product version was accepted")
 	}
 }

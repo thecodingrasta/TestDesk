@@ -18,7 +18,9 @@ retry() {
 }
 
 expected=$(go list -m -f '{{.Version}}' github.com/wailsapp/wails/v2)
-wails version | grep -q "$expected" || { echo "Install Wails $expected: go install github.com/wailsapp/wails/v2/cmd/wails@$expected" >&2; exit 1; }
+# The script runs from the repository root after the cd above.
+source scripts/wails_version.sh
+require_wails_version "$expected" || exit 1
 retry go mod download
 case "$(uname -s)" in
   Linux) wails build -clean -trimpath -skipbindings -skipembedcreate -m -nosyncgomod -tags webkit2_41 -o testdesk ;;
